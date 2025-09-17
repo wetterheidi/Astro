@@ -604,13 +604,40 @@
                         </tbody>
                     </table>
                 </div>
-                <div id="moonImageContainer">
-                    <img id="moonPhaseImage" alt="Aktuelle Mondphase" style="width: 150px; height: 150px; border: 1px solid #ccc; border-radius: 50%; background-color: black;">
-                </div>
+                <div id="moonClockContainer" style="position: relative; width: 600px; height: 400px;">
+                    <img src="images/moon-phasesall--de.png" alt="Mondphasen-Uhr" style="width: 600px; height: 400px;">
+                    
+                    <div id="moonPointer" style="
+                        position: absolute;
+                        bottom: 50%;
+                        left: 50%;
+                        width: 7px;
+                        height: 80px;
+                        background-color: #ff4d4d;
+                        transform-origin: bottom center;
+                        transform: rotate(0deg);
+                        transition: transform 0.7s ease-in-out;
+                        margin-left: -1px;
+                        border-radius: 1px;
+                        /* *** NEU: Positionierung für die Pfeilspitze *** */
+                        display: flex; /* Für die Ausrichtung des ::before Elements */
+                        justify-content: center; /* Zentriert die Pfeilspitze oben */
+                        align-items: flex-start; /* Platziert die Pfeilspitze am oberen Ende */
+                    ">
+                        <div style="
+                            position: absolute;
+                            top: -6px; /* Positioniert die Spitze etwas über dem Zeiger */
+                            width: 0;
+                            height: 0;
+                            border-left: 10px solid transparent;
+                            border-right: 10px solid transparent;
+                            border-bottom: 10px solid #ff4d4d; /* Farbe der Pfeilspitze */
+                        "></div>
+                    </div>
                 <div id="sunMoonError" class="error"></div>
             </div>
         </div>
-        <div id="MonthTable" class="tabcontent">
+    </div> </div> <div id="MonthTable" class="tabcontent">
             <h2>Monatstabelle</h2>
             <div class="input-section">
                 <label for="mgrsInputMonthTable">MGRS-Koordinate (z.B. 32U MV 12345 67890): </label>
@@ -1124,7 +1151,7 @@
 
     let sunMoonData = [];
 
-    function calculateSunMoon() {
+function calculateSunMoon() {
         if (!sunMoonErrorDiv || !dawnSpan || !sunriseSpan || !solarNoonSpan || !solarNoonAzimuthSpan || !solarNoonElevationSpan || !sunsetSpan || !duskSpan || !moonriseSpan || !moonNoonSpan || !moonNoonAzimuthSpan || !moonNoonElevationSpan || !moonsetSpan || !moonPhaseSpan || !utcToggle) {
             console.error('Ein oder mehrere Elemente wurden nicht gefunden!');
             return;
@@ -1163,33 +1190,17 @@
 
         renderTable();
 
-        // *** NEUER CODEBLOCK ZUM ANZEIGEN DES MONDBILDES ***
-        const moonImage = document.getElementById('moonPhaseImage');
-        const phase = moonIllumination.phase;
-        let phaseIndex; // Ein Wert von 0-7, der zum Dateinamen passt
+        // *** NEUE LOGIK ZUR STEUERUNG DES MONDUHR-ZEIGERS ***
+        const moonPointer = document.getElementById('moonPointer');
+        const phase = moonIllumination.phase; // Ein Wert von 0.0 (Neumond) bis 1.0
 
-        if (phase <= 0.0625 || phase > 0.9375) {
-            phaseIndex = 0; // Neumond
-        } else if (phase <= 0.1875) {
-            phaseIndex = 1; // Zunehmende Sichel
-        } else if (phase <= 0.3125) {
-            phaseIndex = 2; // Erstes Viertel
-        } else if (phase <= 0.4375) {
-            phaseIndex = 3; // Zunehmender Mond
-        } else if (phase <= 0.5625) {
-            phaseIndex = 4; // Vollmond
-        } else if (phase <= 0.6875) {
-            phaseIndex = 5; // Abnehmender Mond
-        } else if (phase <= 0.8125) {
-            phaseIndex = 6; // Letztes Viertel
-        } else { // bis 0.9375
-            phaseIndex = 7; // Abnehmende Sichel
-        }
-        console.log('Mondphasenindex:', phaseIndex);
-        console.log('Dateiname: ', `images/moon_${phaseIndex}.png`);
-        
-        // Setze die Bildquelle basierend auf dem berechneten Index
-        moonImage.src = `images/moon_${phaseIndex}.png`;
+        // Formel zur Umrechnung der Mondphase in einen Rotationswinkel (in Grad),
+        // passend zur Anordnung der Phasen auf Ihrem Bild.
+        // Bei Phase 0.75 (letztes Viertel, oben) ist der Winkel 0 Grad.
+        const rotationAngle = (-phase * 360) + 270;
+
+        // Wende die Rotation auf das 'transform'-Style-Attribut des Zeigers an
+        moonPointer.style.transform = `rotate(${rotationAngle}deg)`;
     }
 
     // Funktion zum Finden des Mond-Höchststands
