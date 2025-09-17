@@ -1803,7 +1803,8 @@
                 const timeStr = pos.time.toLocaleTimeString(dayUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions);
                 const day = pos.time.getDate().toString().padStart(2, '0'); const month = (pos.time.getMonth() + 1).toString().padStart(2, '0');
                 const dateStr = `${day}.${month}.`; const dateTimeStr = `${dateStr} ${timeStr}`;
-                let labelX = centerX + (maxRadius + 72) * Math.sin(angleRad); let labelY = centerY - (maxRadius + 72) * Math.cos(angleRad);
+                let labelX = centerX + (maxRadius + 70) * Math.sin(angleRad); 
+                let labelY = centerY - (maxRadius + 70) * Math.cos(angleRad);
                 let offsetY = 0; let offsetX = 0;
                 labelPositions.forEach(p => {
                     if (Math.abs(pos.azimuth - p.azimuth) < 15) {
@@ -1814,7 +1815,7 @@
                 labelX += offsetX; labelY += offsetY;
                 if (isTransparent) {
                     ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center';
-                    const rectWidth = 130; const rectHeight = 40;
+                    const rectWidth = 110; const rectHeight = 40;
                     ctx.fillStyle = 'white'; ctx.fillRect(labelX - rectWidth / 2, labelY - rectHeight / 2, rectWidth, rectHeight);
                 }
                 ctx.fillStyle = '#000'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
