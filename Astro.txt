@@ -535,75 +535,108 @@
             <label for="sortToggle">Zeitlich sortieren: </label>
             <input type="checkbox" id="sortToggle" onchange="sortTable()">
             <br><br>
-            <div id="sunMoonResults">
-                <table id="sunMoonTable" class="sun-moon-table">
-                    <thead>
-                        <tr>
-                            <th>Ereignis</th>
-                            <th>Zeit</th>
-                            <th>Azimut (°)</th>
-                            <th>Elevation (°)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sunMoonTableBody">
-                        <tr class="sun-row">
-                            <td>Beginn bürgerliche Dämmerung (Morgen)</td>
-                            <td id="dawn">N/A</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <tr class="sun-row">
-                            <td>Sonnenaufgang</td>
-                            <td id="sunrise">N/A</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <tr class="sun-row">
-                            <td>Höchststand Sonne</td>
-                            <td id="solarNoon">N/A</td>
-                            <td id="solarNoonAzimuth">N/A</td>
-                            <td id="solarNoonElevation">N/A</td>
-                        </tr>
-                        <tr class="sun-row">
-                            <td>Sonnenuntergang</td>
-                            <td id="sunset">N/A</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <tr class="sun-row">
-                            <td>Ende bürgerliche Dämmerung (Abend)</td>
-                            <td id="dusk">N/A</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <tr class="moon-row">
-                            <td>Mondaufgang</td>
-                            <td id="moonrise">N/A</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <tr class="moon-row">
-                            <td>Höchststand Mond</td>
-                            <td id="moonNoon">N/A</td>
-                            <td id="moonNoonAzimuth">N/A</td>
-                            <td id="moonNoonElevation">N/A</td>
-                        </tr>
-                        <tr class="moon-row">
-                            <td>Monduntergang</td>
-                            <td id="moonset">N/A</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <tr class="moon-row">
-                            <td>Mondphase</td>
-                            <td id="moonPhase">N/A</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div style="display: flex; align-items: flex-start; gap: 20px;">
+                <div id="sunMoonResults" style="flex-grow: 1;">
+                    <table id="sunMoonTable" class="sun-moon-table">
+                        <thead>
+                            <tr>
+                                <th>Ereignis</th>
+                                <th>Zeit</th>
+                                <th>Azimut (°)</th>
+                                <th>Elevation (°)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sunMoonTableBody">
+                            <tr class="sun-row">
+                                <td>Beginn bürgerliche Dämmerung (Morgen)</td>
+                                <td id="dawn">N/A</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr class="sun-row">
+                                <td>Sonnenaufgang</td>
+                                <td id="sunrise">N/A</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr class="sun-row">
+                                <td>Höchststand Sonne</td>
+                                <td id="solarNoon">N/A</td>
+                                <td id="solarNoonAzimuth">N/A</td>
+                                <td id="solarNoonElevation">N/A</td>
+                            </tr>
+                            <tr class="sun-row">
+                                <td>Sonnenuntergang</td>
+                                <td id="sunset">N/A</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr class="sun-row">
+                                <td>Ende bürgerliche Dämmerung (Abend)</td>
+                                <td id="dusk">N/A</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr class="moon-row">
+                                <td>Mondaufgang</td>
+                                <td id="moonrise">N/A</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr class="moon-row">
+                                <td>Höchststand Mond</td>
+                                <td id="moonNoon">N/A</td>
+                                <td id="moonNoonAzimuth">N/A</td>
+                                <td id="moonNoonElevation">N/A</td>
+                            </tr>
+                            <tr class="moon-row">
+                                <td>Monduntergang</td>
+                                <td id="moonset">N/A</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr class="moon-row">
+                                <td>Mondphase</td>
+                                <td id="moonPhase">N/A</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="moonClockContainer" style="position: relative; width: 600px; height: 340px;">
+                    <img src="images/moon-phasesall--de.png" alt="Mondphasen-Uhr" style="width: 600px; height: 340px;">
+
+                    <div id="moonPointer" style="
+                        position: absolute;
+                        bottom: 50%;
+                        left: 50%;
+                        width: 7px;
+                        height: 80px;
+                        background-color: #ff4d4d;
+                        transform-origin: bottom center;
+                        transform: rotate(0deg);
+                        transition: transform 0.7s ease-in-out;
+                        margin-left: -1px;
+                        border-radius: 1px;
+                        /* *** NEU: Positionierung für die Pfeilspitze *** */
+                        display: flex; /* Für die Ausrichtung des ::before Elements */
+                        justify-content: center; /* Zentriert die Pfeilspitze oben */
+                        align-items: flex-start; /* Platziert die Pfeilspitze am oberen Ende */
+                    ">
+                        <div style="
+                            position: absolute;
+                            top: -6px; /* Positioniert die Spitze etwas über dem Zeiger */
+                            width: 0;
+                            height: 0;
+                            border-left: 10px solid transparent;
+                            border-right: 10px solid transparent;
+                            border-bottom: 10px solid #ff4d4d; /* Farbe der Pfeilspitze */
+                        "></div>
+                    </div>
+                    <div id="sunMoonError" class="error"></div>
+                </div>
             </div>
-            <div id="sunMoonError" class="error"></div>
         </div>
     </div>
     <div id="MonthTable" class="tabcontent">
@@ -713,7 +746,8 @@
                 <h3>Himmelsprojektion (Sonne und Mond)</h3>
                 <canvas id="polarChart" width="600" height="600"></canvas>
                 <div class="input-section">
-                    <label for="transparentToggle">Transparenter Hintergrund: </label>
+                    <label for="transparentToggle">Transparenter Hintergrund (Polardiagrammlinien sind weiß!):
+                    </label>
                     <input type="checkbox" id="transparentToggle" checked="true" onchange="calculateDayData()">
                     <br><br>
                     <button onclick="saveChart()">Diagramm als PNG speichern</button>
@@ -753,7 +787,8 @@
             <div class="legend-grid">
                 <span class="color-box" style="background-color: white;"></span><span></span><span>>= 1000
                     mlx</span><span>day light</span>
-                <span class="color-box" style="background-color: #ffff99;"></span><span>B(right)</span><span>10 - 1000
+                <span class="color-box" style="background-color: #ffff99;"></span><span>B(right)</span><span>10 -
+                    1000
                     mlx</span><span>NVG possible</span>
                 <span class="color-box" style="background-color: #ccffcc;"></span><span></span><span>0,7 - 10
                     mlx</span><span>NVG usable</span>
@@ -1125,83 +1160,49 @@
         }
 
         sunMoonErrorDiv.textContent = '';
-        dawnSpan.textContent = 'N/A';
-        sunriseSpan.textContent = 'N/A';
-        solarNoonSpan.textContent = 'N/A';
-        solarNoonAzimuthSpan.textContent = 'N/A';
-        solarNoonElevationSpan.textContent = 'N/A';
-        sunsetSpan.textContent = 'N/A';
-        duskSpan.textContent = 'N/A';
-        moonriseSpan.textContent = 'N/A';
-        moonNoonSpan.textContent = 'N/A';
-        moonNoonAzimuthSpan.textContent = 'N/A';
-        moonNoonElevationSpan.textContent = 'N/A';
-        moonsetSpan.textContent = 'N/A';
-        moonPhaseSpan.textContent = 'N/A';
-
         const lat = parseFloat(latitudeInput.value);
         const lon = parseFloat(longitudeInput.value);
         const date = new Date(dateInput.value);
 
-        // Validierung
-        if (isNaN(lat) || lat < -90 || lat > 90) {
-            sunMoonErrorDiv.textContent = 'Bitte gib einen gültigen Breitengrad zwischen -90 und 90 ein!';
-            return;
-        }
-        if (isNaN(lon) || lon < -180 || lon > 180) {
-            sunMoonErrorDiv.textContent = 'Bitte gib einen gültigen Längengrad zwischen -180 und 180 ein!';
-            return;
-        }
-        if (isNaN(date.getTime())) {
-            sunMoonErrorDiv.textContent = 'Bitte wähle ein gültiges Datum!';
-            return;
-        }
+        if (isNaN(lat) || lat < -90 || lat > 90) { sunMoonErrorDiv.textContent = 'Bitte gib einen gültigen Breitengrad zwischen -90 und 90 ein!'; return; }
+        if (isNaN(lon) || lon < -180 || lon > 180) { sunMoonErrorDiv.textContent = 'Bitte gib einen gültigen Längengrad zwischen -180 und 180 ein!'; return; }
+        if (isNaN(date.getTime())) { sunMoonErrorDiv.textContent = 'Bitte wähle ein gültiges Datum!'; return; }
 
-        // Zeitformatierungsoptionen für hh:mm
         const timeOptionsLocal = { hour: '2-digit', minute: '2-digit', hour12: false };
         const timeOptionsUTC = { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' };
         const timeOptions = utcToggle.checked ? timeOptionsUTC : timeOptionsLocal;
 
-        // Berechnungen mit SunCalc
         const sunTimes = SunCalc.getTimes(date, lat, lon);
         const moonTimes = SunCalc.getMoonTimes(date, lat, lon);
         const moonIllumination = SunCalc.getMoonIllumination(date);
-
-        // Position für Sonnenspitze
         const solarNoonPosition = SunCalc.getPosition(sunTimes.solarNoon, lat, lon);
-
-        // Höchststand Mond berechnen (maximale Elevation)
         const moonNoon = findMoonNoon(date, lat, lon, utcToggle.checked);
 
-        // Daten für die Sortierung sammeln
         sunMoonData = [
             { event: 'Beginn bürgerliche Dämmerung (Morgen)', time: sunTimes.dawn, display: sunTimes.dawn.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions), azimuth: '', elevation: '', class: 'sun-row' },
             { event: 'Sonnenaufgang', time: sunTimes.sunrise, display: sunTimes.sunrise.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions), azimuth: '', elevation: '', class: 'sun-row' },
-            {
-                event: 'Höchststand Sonne',
-                time: sunTimes.solarNoon,
-                display: sunTimes.solarNoon.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions),
-                azimuth: (((solarNoonPosition.azimuth * 180 / Math.PI) + 180) % 360).toFixed(1),
-                elevation: (solarNoonPosition.altitude * 180 / Math.PI).toFixed(1),
-                class: 'sun-row'
-            },
+            { event: 'Höchststand Sonne', time: sunTimes.solarNoon, display: sunTimes.solarNoon.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions), azimuth: (((solarNoonPosition.azimuth * 180 / Math.PI) + 180) % 360).toFixed(1), elevation: (solarNoonPosition.altitude * 180 / Math.PI).toFixed(1), class: 'sun-row' },
             { event: 'Sonnenuntergang', time: sunTimes.sunset, display: sunTimes.sunset.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions), azimuth: '', elevation: '', class: 'sun-row' },
             { event: 'Ende bürgerliche Dämmerung (Abend)', time: sunTimes.dusk, display: sunTimes.dusk.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions), azimuth: '', elevation: '', class: 'sun-row' },
             { event: 'Mondaufgang', time: moonTimes.rise, display: moonTimes.rise ? moonTimes.rise.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions) : 'N/A', azimuth: '', elevation: '', class: 'moon-row' },
-            {
-                event: 'Höchststand Mond',
-                time: moonNoon.time,
-                display: moonNoon.time ? moonNoon.time.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions) : 'N/A',
-                azimuth: moonNoon.azimuth ? moonNoon.azimuth.toFixed(1) : 'N/A',
-                elevation: moonNoon.elevation ? moonNoon.elevation.toFixed(1) : 'N/A',
-                class: 'moon-row'
-            },
+            { event: 'Höchststand Mond', time: moonNoon.time, display: moonNoon.time ? moonNoon.time.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions) : 'N/A', azimuth: moonNoon.azimuth ? moonNoon.azimuth.toFixed(1) : 'N/A', elevation: moonNoon.elevation ? moonNoon.elevation.toFixed(1) : 'N/A', class: 'moon-row' },
             { event: 'Monduntergang', time: moonTimes.set, display: moonTimes.set ? moonTimes.set.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions) : 'N/A', azimuth: '', elevation: '', class: 'moon-row' },
             { event: 'Mondphase', time: null, display: `${getMoonPhaseName(moonIllumination.phase)} (${(moonIllumination.fraction * 100).toFixed(1)}% beleuchtet)`, azimuth: '', elevation: '', class: 'moon-row' }
         ];
 
-        // Tabelle rendern
         renderTable();
+
+        // *** NEUE LOGIK ZUR STEUERUNG DES MONDUHR-ZEIGERS ***
+        const moonPointer = document.getElementById('moonPointer');
+        const phase = moonIllumination.phase; // Ein Wert von 0.0 (Neumond) bis 1.0
+
+        // Formel zur Umrechnung der Mondphase in einen Rotationswinkel (in Grad),
+        // passend zur Anordnung der Phasen auf Ihrem Bild.
+        // Bei Phase 0.75 (letztes Viertel, oben) ist der Winkel 0 Grad.
+        const rotationAngle = (-phase * 360) + 270;
+
+        // Wende die Rotation auf das 'transform'-Style-Attribut des Zeigers an
+        moonPointer.style.transform = `rotate(${rotationAngle}deg)`;
     }
 
     // Funktion zum Finden des Mond-Höchststands
@@ -1605,7 +1606,7 @@
 
         dayDataErrorDiv.textContent = '';
         const combinedDayTableBody = document.getElementById('combinedDayTableBody');
-        combinedDayTableBody.innerHTML = ''; // Tabelle leeren
+        combinedDayTableBody.innerHTML = '';
 
         const lat = parseFloat(dayLatitudeInput.value);
         const lon = parseFloat(dayLongitudeInput.value);
@@ -1613,122 +1614,110 @@
         const startTime = startTimeInput.value;
         const height = parseFloat(objectHeightInput.value);
 
-        // Validierung
-        if (isNaN(lat) || lat < -90 || lat > 90) {
-            dayDataErrorDiv.textContent = 'Bitte gib einen gültigen Breitengrad zwischen -90 und 90 ein!';
-            return;
-        }
-        if (isNaN(lon) || lon < -180 || lon > 180) {
-            dayDataErrorDiv.textContent = 'Bitte gib einen gültigen Längengrad zwischen -180 und 180 ein!';
-            return;
-        }
-        if (isNaN(date.getTime())) {
-            dayDataErrorDiv.textContent = 'Bitte wähle ein gültiges Startdatum!';
-            return;
-        }
-        if (!startTime) {
-            dayDataErrorDiv.textContent = 'Bitte gib eine gültige Startuhrzeit ein!';
-            return;
-        }
-        if (isNaN(height) || height <= 0) {
-            dayDataErrorDiv.textContent = 'Bitte gib eine gültige Höhe > 0 ein!';
-            return;
-        }
+        if (isNaN(lat) || lat < -90 || lat > 90) { dayDataErrorDiv.textContent = 'Bitte gib einen gültigen Breitengrad ein!'; return; }
+        if (isNaN(lon) || lon < -180 || lon > 180) { dayDataErrorDiv.textContent = 'Bitte gib einen gültigen Längengrad ein!'; return; }
+        if (isNaN(date.getTime())) { dayDataErrorDiv.textContent = 'Bitte wähle ein gültiges Datum!'; return; }
+        if (!startTime) { dayDataErrorDiv.textContent = 'Bitte gib eine gültige Startuhrzeit ein!'; return; }
+        if (isNaN(height) || height <= 0) { dayDataErrorDiv.textContent = 'Bitte gib eine gültige Höhe > 0 ein!'; return; }
 
-        // Startzeitpunkt setzen
         const [hours, minutes] = startTime.split(':').map(Number);
         const startDateTime = new Date(date);
         startDateTime.setHours(hours, minutes, 0, 0);
 
-        // Zeitformatierungsoptionen für hh:mm
         const timeOptionsLocal = { hour: '2-digit', minute: '2-digit', hour12: false };
         const timeOptionsUTC = { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' };
         const timeOptions = dayUtcToggle.checked ? timeOptionsUTC : timeOptionsLocal;
 
-        // *** NEUE, ROBUSTERE DATENSAMMLUNG ***
-
         const sunPositions = [];
         const moonPositions = [];
         const labels = [];
-        const events = []; // Diese Liste ist nur noch für die Beschriftungen da
-        
         const endDateTime = new Date(startDateTime.getTime() + 24 * 60 * 60 * 1000);
 
         // 1. Halbstündliche Daten für die Pfade sammeln
         for (let halfHour = 0; halfHour < 48; halfHour++) {
             const checkTime = new Date(startDateTime.getTime() + halfHour * 30 * 60 * 1000);
-
-            // Sonnenposition
             const sunPosition = SunCalc.getPosition(checkTime, lat, lon);
-            const sunAzimuth = (((sunPosition.azimuth * 180 / Math.PI) + 180) % 360);
-            const sunElevation = (sunPosition.altitude * 180 / Math.PI);
-            sunPositions.push({ time: checkTime, azimuth: sunAzimuth, elevation: sunElevation });
+            sunPositions.push({
+                time: checkTime,
+                azimuth: (((sunPosition.azimuth * 180 / Math.PI) + 180) % 360),
+                elevation: (sunPosition.altitude * 180 / Math.PI),
+                isEvent: false // Markierung, dass dies ein regulärer Pfadpunkt ist
+            });
 
-            // Mondposition
             const moonPosition = SunCalc.getMoonPosition(checkTime, lat, lon);
-            const moonAzimuth = ((moonPosition.azimuth * 180 / Math.PI + 180) % 360);
-            const moonElevation = (moonPosition.altitude * 180 / Math.PI);
-            moonPositions.push({ time: checkTime, azimuth: moonAzimuth, elevation: moonElevation });
+            moonPositions.push({
+                time: checkTime,
+                azimuth: (((moonPosition.azimuth * 180 / Math.PI) + 180) % 360),
+                elevation: (moonPosition.altitude * 180 / Math.PI),
+                isEvent: false
+            });
 
-            // Daten für Tabelle (visuelle Darstellung)
-            const sunShadowLength = sunElevation > 0 ? (height / Math.tan(sunPosition.altitude)).toFixed(1) : 'N/A';
-            const moonShadowLength = moonElevation > 0 ? (height / Math.tan(moonPosition.altitude)).toFixed(1) : 'N/A';
+            const sunElevationForTable = (sunPosition.altitude * 180 / Math.PI);
+            const moonElevationForTable = (moonPosition.altitude * 180 / Math.PI);
+            const sunShadowLength = sunElevationForTable > 0 ? (height / Math.tan(sunPosition.altitude)).toFixed(1) : 'N/A';
+            const moonShadowLength = moonElevationForTable > 0 ? (height / Math.tan(moonPosition.altitude)).toFixed(1) : 'N/A';
             const row = document.createElement('tr');
-            row.innerHTML = `
-            <td>${checkTime.toLocaleTimeString(dayUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions)}</td>
-            <td class="combined-sun">${sunAzimuth.toFixed(1)}</td>
-            <td class="combined-sun">${sunElevation.toFixed(1)}</td>
-            <td class="combined-sun">${sunShadowLength}</td>
-            <td class="combined-moon">${moonAzimuth.toFixed(1)}</td>
-            <td class="combined-moon">${moonElevation.toFixed(1)}</td>
-            <td class="combined-moon">${moonShadowLength}</td>
-        `;
+            row.innerHTML = `<td>${checkTime.toLocaleTimeString(dayUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions)}</td><td class="combined-sun">${sunPositions[sunPositions.length - 1].azimuth.toFixed(1)}</td><td class="combined-sun">${sunElevationForTable.toFixed(1)}</td><td class="combined-sun">${sunShadowLength}</td><td class="combined-moon">${moonPositions[moonPositions.length - 1].azimuth.toFixed(1)}</td><td class="combined-moon">${moonElevationForTable.toFixed(1)}</td><td class="combined-moon">${moonShadowLength}</td>`;
             combinedDayTableBody.appendChild(row);
         }
 
-        // 2. Ereignispunkte direkt in die korrekten Listen einfügen
-        let currentDate = new Date(startDateTime);
-        while (currentDate <= endDateTime) {
-            const sunTimes = SunCalc.getTimes(currentDate, lat, lon);
-            const moonTimes = SunCalc.getMoonTimes(currentDate, lat, lon);
+        // 2. Exakte Ereignispunkte sammeln und zur selben Liste hinzufügen
+        const sunTimesStartDay = SunCalc.getTimes(startDateTime, lat, lon);
+        const sunTimesEndDay = SunCalc.getTimes(endDateTime, lat, lon);
+        const moonTimesStartDay = SunCalc.getMoonTimes(startDateTime, lat, lon);
+        const moonTimesEndDay = SunCalc.getMoonTimes(endDateTime, lat, lon);
 
-            // Sonnenereignisse
-            if (sunTimes.sunrise >= startDateTime && sunTimes.sunrise <= endDateTime) {
-                const position = SunCalc.getPosition(sunTimes.sunrise, lat, lon);
-                sunPositions.push({ time: sunTimes.sunrise, azimuth: (((position.azimuth * 180 / Math.PI) + 180) % 360), elevation: Math.max(0, position.altitude * 180 / Math.PI) });
-                events.push({ name: 'SA', time: sunTimes.sunrise, position: position, color: 'orange' });
-            }
-            if (sunTimes.sunset >= startDateTime && sunTimes.sunset <= endDateTime) {
-                const position = SunCalc.getPosition(sunTimes.sunset, lat, lon);
-                sunPositions.push({ time: sunTimes.sunset, azimuth: (((position.azimuth * 180 / Math.PI) + 180) % 360), elevation: Math.max(0, position.altitude * 180 / Math.PI) });
-                events.push({ name: 'SU', time: sunTimes.sunset, position: position, color: 'orange' });
-            }
-            
-            // Mondereignisse
-            if (moonTimes.rise && moonTimes.rise >= startDateTime && moonTimes.rise <= endDateTime) {
-                const position = SunCalc.getMoonPosition(moonTimes.rise, lat, lon);
-                moonPositions.push({ time: moonTimes.rise, azimuth: (((position.azimuth * 180 / Math.PI) + 180) % 360), elevation: Math.max(0, position.altitude * 180 / Math.PI) });
-                events.push({ name: 'MA', time: moonTimes.rise, position: position, color: 'blue' });
-            }
-            if (moonTimes.set && moonTimes.set >= startDateTime && moonTimes.set <= endDateTime) {
-                const position = SunCalc.getMoonPosition(moonTimes.set, lat, lon);
-                moonPositions.push({ time: moonTimes.set, azimuth: (((position.azimuth * 180 / Math.PI) + 180) % 360), elevation: Math.max(0, position.altitude * 180 / Math.PI) });
-                events.push({ name: 'MU', time: moonTimes.set, position: position, color: 'blue' });
-            }
-            
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
+        const potentialSunEvents = [
+            { name: 'SA', time: sunTimesStartDay.sunrise, color: 'orange' },
+            { name: 'SU', time: sunTimesStartDay.sunset, color: 'orange' },
+            { name: 'SA', time: sunTimesEndDay.sunrise, color: 'orange' },
+            { name: 'SU', time: sunTimesEndDay.sunset, color: 'orange' }
+        ];
+        const potentialMoonEvents = [
+            { name: 'MA', time: moonTimesStartDay.rise, color: 'yellow' },
+            { name: 'MU', time: moonTimesStartDay.set, color: 'yellow' },
+            { name: 'MA', time: moonTimesEndDay.rise, color: 'yellow' },
+            { name: 'MU', time: moonTimesEndDay.set, color: 'yellow' }
+        ];
 
-        // 3. Beide Pfad-Listen chronologisch sortieren
+        potentialSunEvents.forEach(event => {
+            if (event.time && event.time >= startDateTime && event.time <= endDateTime) {
+                const position = SunCalc.getPosition(event.time, lat, lon);
+                sunPositions.push({
+                    time: event.time,
+                    azimuth: (((position.azimuth * 180 / Math.PI) + 180) % 360),
+                    elevation: Math.max(0, position.altitude * 180 / Math.PI),
+                    isEvent: true, // Markierung als spezieller Ereignispunkt
+                    eventName: event.name,
+                    eventColor: event.color
+                });
+            }
+        });
+
+        potentialMoonEvents.forEach(event => {
+            if (event.time && event.time >= startDateTime && event.time <= endDateTime) {
+                const position = SunCalc.getMoonPosition(event.time, lat, lon);
+                moonPositions.push({
+                    time: event.time,
+                    azimuth: (((position.azimuth * 180 / Math.PI) + 180) % 360),
+                    elevation: Math.max(0, position.altitude * 180 / Math.PI),
+                    isEvent: true,
+                    eventName: event.name,
+                    eventColor: event.color
+                });
+            }
+        });
+
+        // 3. Die kombinierte Liste sortieren
         sunPositions.sort((a, b) => a.time - b.time);
         moonPositions.sort((a, b) => a.time - b.time);
 
-        // 4. Diagramm mit den nun sauber getrennten Daten rendern
-        renderPolarChart(sunPositions, moonPositions, labels, events, timeOptions);
+        // 4. Diagramm rendern
+        renderPolarChart(sunPositions, moonPositions, labels, timeOptions);
     }
 
 // Funktion zum Rendern des Polardiagramms
-    function renderPolarChart(sunPositions, moonPositions, labels, events, timeOptions) {
+    function renderPolarChart(sunPositions, moonPositions, labels, timeOptions) {
         const ctx = polarChartCanvas.getContext('2d');
         ctx.clearRect(0, 0, polarChartCanvas.width, polarChartCanvas.height);
 
@@ -1736,260 +1725,121 @@
         const height = polarChartCanvas.height;
         const centerX = width / 2;
         const centerY = height / 2;
-        const maxRadius = Math.min(width, height) / 2 - 80;
+        const maxRadius = Math.min(width, height) / 2 - 110;
         const isTransparent = document.getElementById('transparentToggle').checked;
 
-        // Checkbox-Werte abrufen
         const showSun = document.getElementById('showSun').checked;
         const showMoon = document.getElementById('showMoon').checked;
-        console.log('renderPolarChart aufgerufen - showSun:', showSun, 'showMoon:', showMoon);
 
-        // NEU: Hintergrund nur zeichnen, wenn die Checkbox nicht aktiviert ist
-        if (!isTransparent) {
-            // Zeichne Hintergrund (Kreise für Elevation)
-            ctx.strokeStyle = '#ccc';
-            ctx.lineWidth = 1;
-            for (let elevation = 0; elevation <= 90; elevation += 30) {
-                const radius = (1 - elevation / 90) * maxRadius;
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-                ctx.stroke();
-                ctx.fillStyle = '#666';
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(`${elevation}°`, centerX, centerY - radius - 10);
-            }
-
-            // Zeichne Radiale für Azimut (alle 45°)
-            for (let azimuth = 0; azimuth < 360; azimuth += 45) {
-                const angleRad = (azimuth * Math.PI) / 180;
-                const x = centerX + maxRadius * Math.sin(angleRad);
-                const y = centerY - maxRadius * Math.cos(angleRad);
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.lineTo(x, y);
-                ctx.stroke();
-            }
-
-            // Zeichne Himmelsrichtungen
-            ctx.fillStyle = '#000';
-            ctx.font = '14px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            const directions = [
-                { label: 'N', angle: 0 },
-                { label: 'NE', angle: 45 },
-                { label: 'E', angle: 90 },
-                { label: 'SE', angle: 135 },
-                { label: 'S', angle: 180 },
-                { label: 'SW', angle: 225 },
-                { label: 'W', angle: 270 },
-                { label: 'NW', angle: 315 }
-            ];
-            directions.forEach(dir => {
-                const angleRad = (dir.angle * Math.PI) / 180;
-                const x = centerX + (maxRadius + 20) * Math.sin(angleRad);
-                const y = centerY - (maxRadius + 20) * Math.cos(angleRad);
-                ctx.fillText(dir.label, x, y);
-            });
+        let gridLineColor, gridLineWidth, gridDegreeColor, gridDirectionColor;
+        if (isTransparent) {
+            gridLineColor = 'white'; gridLineWidth = 2; gridDegreeColor = 'white'; gridDirectionColor = 'white';
+        } else {
+            gridLineColor = '#ccc'; gridLineWidth = 1; gridDegreeColor = '#666'; gridDirectionColor = '#000';
         }
 
-        // Zeichne Hintergrund (Kreise für Elevation)
-        ctx.strokeStyle = '#ccc';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = gridLineColor;
+        ctx.lineWidth = gridLineWidth;
         for (let elevation = 0; elevation <= 90; elevation += 30) {
             const radius = (1 - elevation / 90) * maxRadius;
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-            ctx.stroke();
-            ctx.fillStyle = '#666';
-            ctx.font = '12px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+            ctx.beginPath(); ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI); ctx.stroke();
+            ctx.fillStyle = gridDegreeColor; ctx.font = '12px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(`${elevation}°`, centerX, centerY - radius - 10);
         }
-
-        // Zeichne Radiale für Azimut (alle 45°)
         for (let azimuth = 0; azimuth < 360; azimuth += 45) {
             const angleRad = (azimuth * Math.PI) / 180;
-            const x = centerX + maxRadius * Math.sin(angleRad);
-            const y = centerY - maxRadius * Math.cos(angleRad);
-            ctx.beginPath();
-            ctx.moveTo(centerX, centerY);
-            ctx.lineTo(x, y);
-            ctx.stroke();
+            const x = centerX + maxRadius * Math.sin(angleRad); const y = centerY - maxRadius * Math.cos(angleRad);
+            ctx.beginPath(); ctx.moveTo(centerX, centerY); ctx.lineTo(x, y); ctx.stroke();
         }
-
-        // Zeichne Himmelsrichtungen
-        ctx.fillStyle = '#000';
-        ctx.font = '14px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        const directions = [
-            { label: 'N', angle: 0 },
-            { label: 'NE', angle: 45 },
-            { label: 'E', angle: 90 },
-            { label: 'SE', angle: 135 },
-            { label: 'S', angle: 180 },
-            { label: 'SW', angle: 225 },
-            { label: 'W', angle: 270 },
-            { label: 'NW', angle: 315 }
-        ];
+        ctx.fillStyle = gridDirectionColor; ctx.font = '14px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        const directions = [{ label: 'N', angle: 0 }, { label: 'NE', angle: 45 }, { label: 'E', angle: 90 }, { label: 'SE', angle: 135 }, { label: 'S', angle: 180 }, { label: 'SW', angle: 225 }, { label: 'W', angle: 270 }, { label: 'NW', angle: 315 }];
         directions.forEach(dir => {
             const angleRad = (dir.angle * Math.PI) / 180;
-            const x = centerX + (maxRadius + 20) * Math.sin(angleRad);
-            const y = centerY - (maxRadius + 20) * Math.cos(angleRad);
+            const x = centerX + (maxRadius + 20) * Math.sin(angleRad); const y = centerY - (maxRadius + 20) * Math.cos(angleRad);
             ctx.fillText(dir.label, x, y);
         });
 
-        // Zeichne Sonnenverlauf (nur wenn aktiviert)
-        if (showSun) {
-            ctx.strokeStyle = 'orange';
-            ctx.lineWidth = 2;
+        // *** KOMPLETT NEU GESCHRIEBENE, KORREKTE HILFSFUNKTION ZUM ZEICHNEN DER PFADE ***
+        const drawPath = (positions, color) => {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 4;
             ctx.beginPath();
-            let firstPoint = true;
-            sunPositions.forEach((pos) => {
-                // *** HIER IST DIE KORREKTUR ***
-                // Wenn der Punkt unter dem Horizont ist, setze "firstPoint" zurück und überspringe ihn.
-                // Das sorgt dafür, dass die Linie beim Wiederauftauchen neu angesetzt wird.
-                if (pos.elevation < 0) {
-                    firstPoint = true;
-                    return;
-                }
+            let firstPointOfSegment = true;
+
+            positions.forEach(pos => {
                 const angleRad = (pos.azimuth * Math.PI) / 180;
                 const radius = (1 - pos.elevation / 90) * maxRadius;
                 const x = centerX + radius * Math.sin(angleRad);
                 const y = centerY - radius * Math.cos(angleRad);
-                if (firstPoint) {
-                    ctx.moveTo(x, y);
-                    firstPoint = false;
+
+                // Nur zeichnen, wenn der Punkt sichtbar ist
+                if (pos.elevation >= 0) {
+                    if (firstPointOfSegment) {
+                        ctx.moveTo(x, y); // Beginne einen neuen Linienabschnitt
+                        firstPointOfSegment = false;
+                    } else {
+                        ctx.lineTo(x, y); // Setze den aktuellen Linienabschnitt fort
+                    }
                 } else {
-                    ctx.lineTo(x, y);
+                    // Wenn ein unsichtbarer Punkt erreicht wird, wird der nächste sichtbare Punkt einen neuen Abschnitt beginnen
+                    firstPointOfSegment = true;
                 }
             });
             ctx.stroke();
-        }
+        };
 
-        // Zeichne Mondverlauf (nur wenn aktiviert)
-        if (showMoon) {
-            ctx.strokeStyle = 'blue';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            let firstPoint = true;
-            moonPositions.forEach((pos) => {
-                // *** HIER IST DIE KORREKTUR (identisch zur Sonne) ***
-                if (pos.elevation < 0) {
-                    firstPoint = true;
-                    return;
-                }
+        if (showSun) drawPath(sunPositions, 'orange');
+        if (showMoon) drawPath(moonPositions, 'yellow');
+        
+        const labelPositions = [];
+        const drawEventMarkers = (positions) => {
+            positions.forEach(pos => {
+                if (!pos.isEvent) return;
                 const angleRad = (pos.azimuth * Math.PI) / 180;
                 const radius = (1 - pos.elevation / 90) * maxRadius;
                 const x = centerX + radius * Math.sin(angleRad);
                 const y = centerY - radius * Math.cos(angleRad);
-                if (firstPoint) {
-                    ctx.moveTo(x, y);
-                    firstPoint = false;
-                } else {
-                    ctx.lineTo(x, y);
-                }
-            });
-            ctx.stroke();
-        }
-
-        // Zeichne Aufgangs- und Untergangspunkte (abhängig von Checkboxen)
-        const labelPositions = []; // Speichere Positionen und Azimut für Überlappungsprüfung
-
-        events.forEach((event, index) => {
-            const isSunEvent = event.name.includes('Sonne');
-            if ((isSunEvent && !showSun) || (!isSunEvent && !showMoon)) return;
-
-            const azimuth = (((event.position.azimuth * 180 / Math.PI) + 180) % 360);
-            const elevation = Math.max(0, event.position.altitude * 180 / Math.PI);
-            const angleRad = (azimuth * Math.PI) / 180;
-            const radius = (1 - elevation / 90) * maxRadius;
-            const x = centerX + radius * Math.sin(angleRad);
-            const y = centerY - radius * Math.cos(angleRad);
-
-            // Punkt zeichnen
-            ctx.fillStyle = event.color;
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, 2 * Math.PI);
-            ctx.fill();
-
-            // Zeitbeschriftung
-            const timeStr = event.time.toLocaleTimeString(dayUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions);
-            const day = event.time.getDate().toString().padStart(2, '0');
-            const month = (event.time.getMonth() + 1).toString().padStart(2, '0');
-            const dateStr = `${day}.${month}.`;
-            const dateTimeStr = `${dateStr} ${timeStr}`;
-
-            // Standardposition der Beschriftung
-            let labelX = centerX + (maxRadius + 45) * Math.sin(angleRad); // Etwas mehr Abstand
-            let labelY = centerY - (maxRadius + 45) * Math.cos(angleRad); // Etwas mehr Abstand
-
-            // Prüfe auf Überlappung mit vorherigen Beschriftungen
-            let offsetY = 0;
-            let offsetX = 0;
-            const azimuthThreshold = 15; // Schwellenwert erhöht
-            const verticalSpacing = 40;
-            const horizontalSpacing = 10;
-
-            labelPositions.forEach(pos => {
-                const azimuthDiff = Math.abs(azimuth - pos.azimuth);
-                if (azimuthDiff < azimuthThreshold) {
-                    // Überlappung erkannt, verschiebe die Beschriftung
-                    if (Math.abs(labelY - pos.labelY) < verticalSpacing) {
-                        // Vertikale Verschiebung
-                        if (labelY < centerY) {
-                            offsetY -= verticalSpacing; // Nach oben verschieben
-                        } else {
-                            offsetY += verticalSpacing; // Nach unten verschieben
-                        }
+                ctx.fillStyle = pos.eventColor; ctx.beginPath(); ctx.arc(x, y, 7, 0, 2 * Math.PI); ctx.fill();
+                const timeStr = pos.time.toLocaleTimeString(dayUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions);
+                const day = pos.time.getDate().toString().padStart(2, '0'); const month = (pos.time.getMonth() + 1).toString().padStart(2, '0');
+                const dateStr = `${day}.${month}.`; const dateTimeStr = `${dateStr} ${timeStr}`;
+                let labelX = centerX + (maxRadius + 70) * Math.sin(angleRad); 
+                let labelY = centerY - (maxRadius + 70) * Math.cos(angleRad);
+                let offsetY = 0; let offsetX = 0;
+                labelPositions.forEach(p => {
+                    if (Math.abs(pos.azimuth - p.azimuth) < 15) {
+                        if (Math.abs(labelY - p.labelY) < 40) { if (labelY < centerY) offsetY -= 40; else offsetY += 40; }
+                        if (Math.abs(labelX - p.labelX) < 10) { if (labelX < centerX) offsetX -= 10; else offsetX += 10; }
                     }
-                    if (Math.abs(labelX - pos.labelX) < horizontalSpacing) {
-                        // Horizontale Verschiebung
-                        if (labelX < centerX) {
-                            offsetX -= horizontalSpacing; // Nach links verschieben
-                        } else {
-                            offsetX += horizontalSpacing; // Nach rechts verschieben
-                        }
-                    }
+                });
+                labelX += offsetX; labelY += offsetY;
+                if (isTransparent) {
+                    ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center';
+                    const rectWidth = 110; const rectHeight = 40;
+                    ctx.fillStyle = 'white'; ctx.fillRect(labelX - rectWidth / 2, labelY - rectHeight / 2, rectWidth, rectHeight);
                 }
+                ctx.fillStyle = '#000'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(pos.eventName, labelX, labelY - 8);
+                ctx.fillText(dateTimeStr, labelX, labelY + 10);
+                labelPositions.push({ azimuth: pos.azimuth, labelX, labelY });
             });
+        };
 
-            // Wende die Verschiebung an
-            labelX += offsetX;
-            labelY += offsetY;
+        if (showSun) drawEventMarkers(sunPositions);
+        if (showMoon) drawEventMarkers(moonPositions);
 
-            // Zeichne die Beschriftung
-            ctx.fillStyle = '#000';
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(event.name, labelX, labelY - 8);
-            ctx.fillText(dateTimeStr, labelX, labelY + 10);
+        // Der fehlerhafte "Lückenfüller" wurde entfernt. Er wird nicht mehr benötigt.
 
-            // Speichere die Position für die nächste Überlappungsprüfung
-            labelPositions.push({ azimuth, labelX, labelY });
-        });
-
-        // Legende (nur für sichtbare Elemente)
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'left';
-        let legendY = centerY + maxRadius + 50; // Reduziere von 75 auf 50
+        ctx.font = '12px Arial'; ctx.textAlign = 'left';
+        let legendY = centerY + maxRadius + 50; 
         if (showSun) {
-            ctx.fillStyle = 'orange';
-            ctx.fillRect(centerX - 50, legendY - 5, 20, 10);
-            ctx.fillStyle = '#000';
-            ctx.fillText('Sonne', centerX - 25, legendY);
+            ctx.fillStyle = 'orange'; ctx.fillRect(centerX - 50, legendY - 5, 20, 10);
+            ctx.fillStyle = '#000'; ctx.fillText('Sonne', centerX - 25, legendY);
             legendY += 20;
         }
         if (showMoon) {
-            ctx.fillStyle = 'blue';
-            ctx.fillRect(centerX - 50, legendY - 5, 20, 10);
-            ctx.fillStyle = '#000';
-            ctx.fillText('Mond', centerX - 25, legendY);
+            ctx.fillStyle = 'yellow'; ctx.fillRect(centerX - 50, legendY - 5, 20, 10);
+            ctx.fillStyle = '#000'; ctx.fillText('Mond', centerX - 25, legendY);
         }
     }
 
@@ -2270,7 +2120,6 @@
         table.appendChild(tbody);
     }
 
-    // NEUE FUNKTION: Zeichnet und aktualisiert das Diagramm
     // NEUE FUNKTION: Zeichnet und aktualisiert das Diagramm
     function updateNightBrightnessChart() {
         const daySelector = document.getElementById('daySelectorForChart');
