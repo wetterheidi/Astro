@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Nachthelligkeiten</title>
+    <style>
+        h1, h2, h3, label {
+            font-family: Calibri, sans-serif; /* Schriftart auf Calibri setzen */
+        }
+        table {
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-family: Calibri, sans-serif; /* Schriftart auf Calibri setzen */
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center; /* Zentriert für bessere Lesbarkeit */
+            width: 40px; /* Feste Breite für alle Spalten */
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .big-value {
+            background-color: #ffff99; /* Gelb für >= 10 */
+        }
+        .mid-value {
+            background-color: #ccffcc; /* Grün für 0,7 < Wert < 10 */
+        }
+        .low-value {
+            background-color: #ffff99; /* Gelb für 0,1 < Wert <= 0,7 */
+        }
+        .tiny-value {
+            background-color: #ffcccc; /* Rot für <= 0,1 */
+        }
+        td:first-child {
+            text-align: left; /* Erste Spalte linksbündig */
+        }
+        .legend {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            display: inline-block;
+            font-family: Calibri, sans-serif;
+        }
+        .legend-grid {
+            display: grid;
+            grid-template-columns: 30px 50px 120px 110px; /* Farbe, Symbol, Bereich, Beschreibung */
+            gap: 10px;
+            align-items: center;
+        }
+        .legend-grid .color-box {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #999;
+        }
+    </style>
+</head>
+<body>
+    <h1>Nachthelligkeiten</h1>
+    <label>Vorarbeit: Formular 4 für den gewünschten Zeitraum als Textdatei (*.txt) abspeichern.</label>
+    <br>
+    <br>
+    <input type="file" id="fileInput" accept=".txt" onchange="processFile()">
+    <br>
+    <div class="legend">
+        <h3>Legende</h3>
+        <div class="legend-grid">
+            <span class="color-box" style="background-color: white;"></span>
+            <span></span>
+            <span>>= 1000 mlx </span>
+            <span>day light</span>
+            <span class="color-box" style="background-color: #ffff99;"></span>
+            <span>B(right) </span>
+            <span>10 - 1000 mlx</span>  
+            <span>NVG possible</span>
+            <span class="color-box" style="background-color: #ccffcc;"></span>
+            <span></span>
+            <span>0,7 - 10 mlx</span>
+            <span>NVG usable</span>
+            <span class="color-box" style="background-color: #ffff99;"></span>
+            <span>D(ark) </span> 
+            <span>0,1 - 0,7 mlx</span>
+            <span>NVG restricted</span>
+            <span class="color-box" style="background-color: #ffcccc;"></span>
+            <span></span>
+            <span><= 0,1 mlx </span>
+            <span>dark night</span>
+        </div>
+    
+    
+    </div>
+    <h2>Tabelle wolkenlos</h2>
+    <table id="tableW"></table>
+    <h2>Tabelle bewölkt</h2>
+    <table id="tableB"></table>
+
+    <script>
+        function processFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const rows = text.split('\n').map(row => row.split('\t').map(cell => cell.trim()));
+
+                // Kopfzeile extrahieren und "wb" aus erster Spalte entfernen
+                const headers = rows[0];
+                headers[0] = headers[0].replace('wb', ''); // Entfernt "wb" aus "Aprwb"
+                const dataRows = rows.slice(1);
+
+                // Daten aufteilen
+                const wRows = dataRows.filter(row => row[0].endsWith('w'));
+                const bRows = dataRows.filter(row => row[0].endsWith('b'));
+
+                // Tabellen rendern
+                renderTable('tableW', headers, wRows);
+                renderTable('tableB', headers, bRows);
+            };
+            reader.readAsText(file);
+        }
+
+        function renderTable(tableId, headers, rows) {
+            const table = document.getElementById(tableId);
+            table.innerHTML = ''; // Tabelle leeren
+
+            // Kopfzeile hinzufügen
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Datenzeilen hinzufügen
+            const tbody = document.createElement('tbody');
+            rows.forEach(row => {
+                const tr = document.createElement('tr');
+                row.forEach((cell, index) => {
+                    const td = document.createElement('td');
+                    const num = parseFloat(cell);
+
+                    if (index === 0) {
+                        // Erste Spalte: Letztes Zeichen (w oder b) entfernen
+                        td.textContent = cell.slice(0, -1).trim();
+                    } else if (!isNaN(num)) {
+                        // Bedingte Formatierung für andere Spalten
+                        if (num >= 10) {
+                            td.textContent = 'B';
+                            td.classList.add('big-value');
+                        } else if (num > 0.7 && num < 10) {
+                            td.textContent = ''; // Kein Zahlenwert
+                            td.classList.add('mid-value');
+                        } else if (num > 0.1 && num <= 0.7) {
+                            td.textContent = 'D';
+                            td.classList.add('low-value');
+                        } else if (num <= 0.1) {
+                            td.textContent = ''; // Kein Zahlenwert
+                            td.classList.add('tiny-value');
+                        }
+                    } else {
+                        td.textContent = cell; // Nicht-numerische Werte bleiben unverändert
+                    }
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+        }
+    </script>
+</body>
+</html>

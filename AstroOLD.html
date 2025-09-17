@@ -1,0 +1,2248 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Astrotool</title>
+    <style>
+        body {
+            font-family: Arial, Calibri, sans-serif;
+            margin: 20px;
+        }
+
+        /* Tab-Styling */
+        .tab {
+            overflow: hidden;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+
+        .tab button {
+            background-color: #f1f1f1;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 16px;
+        }
+
+        .tab button:hover {
+            background-color: #ddd;
+        }
+
+        .tab button.active {
+            background-color: #ccc;
+        }
+
+        .tabcontent {
+            display: none;
+            padding: 20px 0;
+        }
+
+        .tabcontent.active {
+            display: block;
+        }
+
+        /* Gemeinsames Tabellen-Styling */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 800px;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        /* Schattenwurf-spezifisch */
+        .shadow-table td {
+            text-align: right;
+        }
+
+        .shadow-table th:nth-child(1),
+        .shadow-table td:nth-child(1) {
+            /* Zeit */
+            width: 50px;
+        }
+
+        .shadow-table th:nth-child(2),
+        .shadow-table td:nth-child(2) {
+            /* Azimut */
+            width: 60px;
+        }
+
+        .shadow-table th:nth-child(3),
+        .shadow-table td:nth-child(3) {
+            /* Elevation */
+            width: 70px;
+        }
+
+        .shadow-table th:nth-child(4),
+        .shadow-table td:nth-child(4) {
+            /* Faktor */
+            width: 60px;
+        }
+
+        .shadow-table th:nth-child(5),
+        .shadow-table td:nth-child(5) {
+            /* Schattenlänge */
+            width: 100px;
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+
+        /* Nachthelligkeiten-spezifisch */
+        .night-table {
+            table-layout: fixed;
+            /* Erzwingt feste Breiten */
+            width: 100%;
+            /* Beibehalten, wie ursprünglich */
+            max-width: 800px;
+            /* Beibehalten */
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
+
+        .night-table td,
+        .night-table th {
+            text-align: center;
+            width: 50px;
+            /* Feste Breite für Stundenüberschriften und Werte */
+            padding: 6px;
+            /* Reduziert für mehr Textplatz */
+            box-sizing: border-box;
+            font-size: 14px;
+            /* Kleinere Schrift für bessere Darstellung */
+        }
+
+        .night-table td:first-child,
+        .night-table th:first-child {
+            text-align: left;
+            width: 60px;
+            /* Breiter für Monatsnamen und Tage */
+        }
+
+        .night-table .big-value,
+        .night-table .mid-value,
+        .night-table .low-value,
+        .night-table .tiny-value {
+            width: 50px;
+            /* Stelle sicher, dass Klassen die Breite nicht überschreiben */
+        }
+
+        /* Sicherstellen, dass keine allgemeinen Regeln überschreiben */
+        table#tableWCalc.night-table td,
+        table#tableWCalc.night-table th,
+        table#tableBCalc.night-table td,
+        table#tableBCalc.night-table th {
+            width: 50px !important;
+            /* Erzwingt Breite */
+        }
+
+        table#tableWCalc.night-table td:first-child,
+        table#tableWCalc.night-table th:first-child,
+        table#tableBCalc.night-table td:first-child,
+        table#tableBCalc.night-table th:first-child {
+            width: 60px !important;
+            /* Erzwingt Breite für erste Spalte */
+        }
+
+        .big-value {
+            background-color: #ffff99;
+        }
+
+        .mid-value {
+            background-color: #ccffcc;
+        }
+
+        .low-value {
+            background-color: #ffff99;
+        }
+
+        .tiny-value {
+            background-color: #ffcccc;
+        }
+
+        .legend {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            display: inline-block;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: 30px 50px 120px 110px;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .legend-grid .color-box {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #999;
+        }
+
+        .highlight-result {
+            font-size: 24px;
+            color: red;
+            font-weight: bold;
+        }
+
+        /* Sonne & Mond Tabellen-Styling */
+        .sun-moon-table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 800px;
+            margin: 20px 0;
+        }
+
+        .sun-moon-table th,
+        .sun-moon-table td {
+            border: 1px solid darkgray;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .sun-moon-table th {
+            background-color: #f2f2f2;
+        }
+
+        .sun-moon-table td:nth-child(2) {
+            text-align: right;
+        }
+
+        /* Hintergrundfarben für Sonnen- und Mondzeilen */
+        .sun-row {
+            background-color: #ffffcc;
+            /* Hellgelb */
+        }
+
+        .moon-row {
+            background-color: #f0f0f0;
+            /* Hellgrau */
+        }
+
+        .sun-moon-table td:nth-child(2),
+        .sun-moon-table td:nth-child(3),
+        .sun-moon-table td:nth-child(4) {
+            text-align: right;
+            /* Zeit, Azimut und Elevation rechtsbündig */
+        }
+
+        /* Farben für kombinierte Tabelle */
+        .combined-sun {
+            background-color: #ffffcc;
+            /* Hellgelb, wie im Sonne & Mond Tab */
+        }
+
+        .combined-moon {
+            background-color: #f0f0f0;
+            /* Hellgrau, wie im Sonne & Mond Tab */
+        }
+
+        .sun-header {
+            background-color: #ffffcc;
+            /* Hellgelb für Sonnen-Header */
+        }
+
+        .moon-header {
+            background-color: #f0f0f0;
+            /* Hellgrau für Mond-Header */
+        }
+
+        /* Monatstabelle Styling */
+        .month-table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 1000px;
+            /* Erhöht für mehr Spalten */
+            margin: 20px 0;
+        }
+
+        .month-table th,
+        .month-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .month-table th {
+            background-color: #f2f2f2;
+        }
+
+        .month-table td:nth-child(n+2) {
+            /* Alle Spalten außer "Tag" */
+            text-align: right;
+        }
+
+        .month-table td:nth-child(1) {
+            /* "Tag"-Spalte */
+            text-align: left;
+            width: 40px;
+        }
+
+        /* Tagesdaten Tabellen-Styling */
+        .day-table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 600px;
+            margin: 20px 0;
+        }
+
+        .day-table th,
+        .day-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .day-table th {
+            background-color: #f2f2f2;
+        }
+
+        .day-table td:nth-child(1) {
+            /* Zeit */
+            text-align: left;
+            width: 100px;
+        }
+
+        .day-table td:nth-child(2),
+        .day-table td:nth-child(3) {
+            /* Azimut, Elevation */
+            text-align: right;
+        }
+
+        #polarChart {
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Intranetzugang erforderlich */
+        .tablinks.intranet {
+            background-color: #ffcccc;
+            /* Hellrot */
+        }
+
+        .tablinks.intranet:hover {
+            background-color: #ff9999;
+            /* Dunkleres Rot beim Hover */
+        }
+
+        .tablinks.intranet.active {
+            background-color: #ff6666;
+            /* Noch dunkleres Rot, wenn aktiv */
+        }
+
+        /* Standalone fähig */
+        .tablinks.standalone {
+            background-color: #ccffcc;
+            /* Hellgrün */
+        }
+
+        .tablinks.standalone:hover {
+            background-color: #99ff99;
+            /* Dunkleres Grün beim Hover */
+        }
+
+        .tablinks.standalone.active {
+            background-color: #66ff66;
+            /* Noch dunkleres Grün, wenn aktiv */
+        }
+
+        /* Internet erforderlich */
+        .tablinks.internet {
+            background-color: #cce5ff;
+            /* Hellblau */
+        }
+
+        .tablinks.internet:hover {
+            background-color: #99ccff;
+            /* Dunkleres Blau beim Hover */
+        }
+
+        .tablinks.internet.active {
+            background-color: #66b3ff;
+            /* Noch dunkleres Blau, wenn aktiv */
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Astrotool</h1>
+
+    <!-- Tab-Navigation -->
+    <div class="tab">
+        <button class="tablinks intranet" onclick="openTab(event, 'Night')" id="defaultOpen"
+            title="Erfordert Intranetzugang">🔒 Nachthelligkeiten</button>
+        <button class="tablinks intranet" onclick="openTab(event, 'Shadow')" title="Erfordert Intranetzugang">🔒
+            Schattenwurf</button>
+        <button class="tablinks standalone" onclick="openTab(event, 'Maxar')" title="Standalone fähig">✔ Maxar</button>
+        <button class="tablinks internet" onclick="openTab(event, 'SunMoon')" title="Erfordert Internetzugang">🌐 Sonne
+            & Mond</button>
+        <button class="tablinks internet" onclick="openTab(event, 'MonthTable')" title="Erfordert Internetzugang">🌐
+            Monatstabelle</button>
+        <button class="tablinks internet" onclick="openTab(event, 'DayData')" title="Erfordert Internetzugang">🌐
+            Tagesdaten</button>
+        <button class="tablinks internet" onclick="openTab(event, 'NightCalc')" title="Erfordert Internetzugang">🌐
+            Nachthelligkeiten (Berechnet)</button>
+    </div>
+
+    <!-- Nachthelligkeiten Tab -->
+    <div id="Night" class="tabcontent">
+        <label>Vorarbeit: Formular 4 für den gewünschten Zeitraum als Textdatei (*.txt) abspeichern.</label>
+        <br><br>
+        <input type="file" id="nightFileInput" accept=".txt">
+        <br>
+        <div class="legend">
+            <h3>Legende</h3>
+            <div class="legend-grid">
+                <span class="color-box" style="background-color: white;"></span>
+                <span></span>
+                <span>>= 1000 mlx</span>
+                <span>day light</span>
+                <span class="color-box" style="background-color: #ffff99;"></span>
+                <span>B(right)</span>
+                <span>10 - 1000 mlx</span>
+                <span>NVG possible</span>
+                <span class="color-box" style="background-color: #ccffcc;"></span>
+                <span></span>
+                <span>0,7 - 10 mlx</span>
+                <span>NVG usable</span>
+                <span class="color-box" style="background-color: #ffff99;"></span>
+                <span>D(ark)</span>
+                <span>0,1 - 0,7 mlx</span>
+                <span>NVG restricted</span>
+                <span class="color-box" style="background-color: #ffcccc;"></span>
+                <span></span>
+                <span>
+                    <= 0,1 mlx</span>
+                        <span>dark night</span>
+            </div>
+        </div>
+        <h2>Tabelle wolkenlos</h2>
+        <table id="tableW" class="night-table"></table>
+        <h2>Tabelle bewölkt</h2>
+        <table id="tableB" class="night-table"></table>
+    </div>
+
+    <!-- Schattenwurf Tab -->
+    <div id="Shadow" class="tabcontent">
+        <label>Vorarbeit: Formular 3 (Mond) oder Formular 2 (Sonne) für den gewünschten Zeitraum als Textdatei (*.txt)
+            abspeichern.</label>
+        <div class="input-section">
+            <br>
+            <label for="height">Höhe des Gegenstands (in Metern): </label>
+            <input type="number" id="height" step="0.1" min="0" value="1">
+            <br><br>
+            <input type="file" id="shadowFileInput" accept=".txt">
+            <div id="error" class="error"></div>
+        </div>
+        <table id="resultTable" class="shadow-table">
+            <thead>
+                <tr>
+                    <th>Zeit</th>
+                    <th>Azimut (°)</th>
+                    <th>Elevation (°)</th>
+                    <th>Faktor</th>
+                    <th>Schattenlänge (m)</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    <!-- Maxar Tab -->
+    <div id="Maxar" class="tabcontent">
+        <h2>Maxar</h2>
+        <label>Vorarbeit: Metadatei als JSON-Datei (*.json) abspeichern (optional, wenn Sonnenelevation manuell
+            eingegeben wird).</label>
+        <div class="input-section">
+            <br>
+            <input type="file" id="maxarFileInput" accept=".json">
+            <br><br>
+            <div id="maxarInfo">
+                <p>Sonnenazimut: <span id="sunAzimuth">N/A</span>°</p>
+                <p>Sonnenelevation: <span id="sunElevation">N/A</span>°</p>
+                <label for="manualSunElevation">Sonnenelevation manuell eingeben (in Grad, überschreibt JSON-Daten):
+                </label>
+                <input type="number" id="manualSunElevation" step="0.1" min="0" max="90" placeholder="Optional">
+                <br><br>
+            </div>
+            <label for="shadowLength">Schattenlänge (in Metern): </label>
+            <input type="number" id="shadowLength" step="0.1" min="0" value="10">
+            <br><br>
+            <p class="highlight-result">Berechnete Höhe des Gegenstands: <span id="objectHeight"
+                    class="highlight-result">N/A</span> m</p>
+            <div id="maxarError" class="error"></div>
+        </div>
+    </div>
+    <!-- Sonne & Mond Tab -->
+    <div id="SunMoon" class="tabcontent">
+        <h2>Sonne & Mond</h2>
+        <div class="input-section">
+            <label for="latitude">Breitengrad (z.B. 47.975): </label>
+            <input type="number" id="latitude" step="0.001" min="-90" max="90" value="47.975">
+            <br><br>
+            <label for="longitude">Längengrad (z.B. 10.90): </label>
+            <input type="number" id="longitude" step="0.001" min="-180" max="180" value="10.90">
+            <br><br>
+            <label for="date">Datum: </label>
+            <input type="date" id="date" value="2025-04-07">
+            <br><br>
+            <label for="utcToggle">UTC-Zeit anzeigen: </label>
+            <input type="checkbox" id="utcToggle" onchange="calculateSunMoon()">
+            <br><br>
+            <button onclick="calculateSunMoon()">Berechnen</button>
+            <br><br>
+            <label for="sortToggle">Zeitlich sortieren: </label>
+            <input type="checkbox" id="sortToggle" onchange="sortTable()">
+            <br><br>
+            <div id="sunMoonResults">
+                <table id="sunMoonTable" class="sun-moon-table">
+                    <thead>
+                        <tr>
+                            <th>Ereignis</th>
+                            <th>Zeit</th>
+                            <th>Azimut (°)</th>
+                            <th>Elevation (°)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sunMoonTableBody">
+                        <tr class="sun-row">
+                            <td>Beginn bürgerliche Dämmerung (Morgen)</td>
+                            <td id="dawn">N/A</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="sun-row">
+                            <td>Sonnenaufgang</td>
+                            <td id="sunrise">N/A</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="sun-row">
+                            <td>Höchststand Sonne</td>
+                            <td id="solarNoon">N/A</td>
+                            <td id="solarNoonAzimuth">N/A</td>
+                            <td id="solarNoonElevation">N/A</td>
+                        </tr>
+                        <tr class="sun-row">
+                            <td>Sonnenuntergang</td>
+                            <td id="sunset">N/A</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="sun-row">
+                            <td>Ende bürgerliche Dämmerung (Abend)</td>
+                            <td id="dusk">N/A</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="moon-row">
+                            <td>Mondaufgang</td>
+                            <td id="moonrise">N/A</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="moon-row">
+                            <td>Höchststand Mond</td>
+                            <td id="moonNoon">N/A</td>
+                            <td id="moonNoonAzimuth">N/A</td>
+                            <td id="moonNoonElevation">N/A</td>
+                        </tr>
+                        <tr class="moon-row">
+                            <td>Monduntergang</td>
+                            <td id="moonset">N/A</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr class="moon-row">
+                            <td>Mondphase</td>
+                            <td id="moonPhase">N/A</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="sunMoonError" class="error"></div>
+        </div>
+    </div>
+    <!-- Monatstabelle Tab -->
+    <div id="MonthTable" class="tabcontent">
+        <h2>Monatstabelle</h2>
+        <div class="input-section">
+            <label for="monthLatitude">Breitengrad (z.B. 47.975): </label>
+            <input type="number" id="monthLatitude" step="0.001" min="-90" max="90" value="47.975">
+            <br><br>
+            <label for="monthLongitude">Längengrad (z.B. 10.90): </label>
+            <input type="number" id="monthLongitude" step="0.001" min="-180" max="180" value="10.90">
+            <br><br>
+            <label for="monthYear">Monat und Jahr: </label>
+            <input type="month" id="monthYear" value="2025-02">
+            <br><br>
+            <button onclick="calculateMonthTable()">Berechnen</button>
+            <br><br>
+            <label for="monthUtcToggle">UTC-Zeit anzeigen: </label>
+            <input type="checkbox" id="monthUtcToggle" onchange="calculateMonthTable()">
+            <br><br>
+            <div id="monthTableResults">
+                <table id="monthTable" class="month-table">
+                    <thead>
+                        <tr>
+                            <th>Tag</th>
+                            <th>Anfang astr. Dämmerung</th>
+                            <th>Ende dunkle Nacht</th>
+                            <th>Anfang naut. Dämmerung</th>
+                            <th>Anfang bürg. Dämmerung</th>
+                            <th>Sonnenaufgang</th>
+                            <th>Sonnenuntergang</th>
+                            <th>Ende bürg. Dämmerung</th>
+                            <th>Ende naut. Dämmerung</th>
+                            <th>Anfang dunkle Nacht</th>
+                            <th>Ende astr. Dämmerung</th>
+                            <th>Mondaufgang</th>
+                            <th>Monduntergang</th>
+                        </tr>
+                    </thead>
+                    <tbody id="monthTableBody"></tbody>
+                </table>
+            </div>
+            <div id="monthTableError" class="error"></div>
+        </div>
+    </div>
+    <!-- Neuer Tagesdaten Tab -->
+    <div id="DayData" class="tabcontent">
+        <h2>Tagesdaten</h2>
+        <div class="input-section">
+            <label for="dayLatitude">Breitengrad (z.B. 47.975): </label>
+            <input type="number" id="dayLatitude" step="0.001" min="-90" max="90" value="47.975">
+            <br><br>
+            <label for="dayLongitude">Längengrad (z.B. 10.90): </label>
+            <input type="number" id="dayLongitude" step="0.001" min="-180" max="180" value="10.90">
+            <br><br>
+            <label for="dayDate">Startdatum: </label>
+            <input type="date" id="dayDate" value="2025-04-07">
+            <br><br>
+            <label for="startTime">Startuhrzeit (loc): </label>
+            <input type="time" id="startTime" value="12:00">
+            <br><br>
+            <label for="objectHeightInput">Höhe des Gegenstands (in Metern): </label>
+            <input type="number" id="objectHeightInput" step="0.1" min="0" value="1">
+            <br><br>
+            <button onclick="calculateDayData()">Berechnen</button>
+            <br><br>
+            <label for="dayUtcToggle">UTC-Zeit anzeigen: </label>
+            <input type="checkbox" id="dayUtcToggle" onchange="calculateDayData()">
+            <br><br>
+            <label for="showSun">Sonne anzeigen: </label>
+            <input type="checkbox" id="showSun" checked onchange="calculateDayData()">
+            <br><br>
+            <label for="showMoon">Mond anzeigen: </label>
+            <input type="checkbox" id="showMoon" checked onchange="calculateDayData()">
+            <br><br>
+            <div id="dayDataResults">
+                <h3>Sonne und Mond</h3>
+                <table id="combinedDayTable" class="day-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th colspan="3" class="sun-header">Sonne</th>
+                            <th colspan="3" class="moon-header">Mond</th>
+                        </tr>
+                        <tr>
+                            <th>Uhrzeit</th>
+                            <th class="sun-header">Azimut (°)</th>
+                            <th class="sun-header">Elevation (°)</th>
+                            <th class="sun-header">Schattenwurf (m)</th>
+                            <th class="moon-header">Azimut (°)</th>
+                            <th class="moon-header">Elevation (°)</th>
+                            <th class="moon-header">Schattenwurf (m)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="combinedDayTableBody"></tbody>
+                </table>
+                <h3>Himmelsprojektion (Sonne und Mond)</h3>
+                <canvas id="polarChart" width="600" height="600"></canvas>
+            </div>
+            <div id="dayDataError" class="error"></div>
+        </div>
+    </div>
+    <!-- Neuer Tab-Inhalt nach den anderen tabcontent-Divs -->
+    <div id="NightCalc" class="tabcontent">
+        <h2>Nachthelligkeiten (Berechnet)</h2>
+        <div class="input-section">
+            <label for="nightCalcLatitude">Breitengrad (z.B. 47.975): </label>
+            <input type="number" id="nightCalcLatitude" step="0.001" min="-90" max="90" value="47.975"><br><br>
+            <label for="nightCalcLongitude">Längengrad (z.B. 10.9): </label>
+            <input type="number" id="nightCalcLongitude" step="0.001" min="-180" max="180" value="10.9"><br><br>
+            <label for="nightCalcMonthYear">Monat und Jahr: </label>
+            <input type="month" id="nightCalcMonthYear" value="2025-04"><br><br>
+            <label for="nightCalcUtcToggle">UTC-Zeit anzeigen: </label>
+            <input type="checkbox" id="nightCalcUtcToggle" onchange="calculateMonthlyNightBrightness()"><br><br>
+            <label for="displayMode">Anzeigemodus: </label>
+            <select id="displayMode" onchange="calculateMonthlyNightBrightness()">
+                <option value="numbers" selected>Zahlenwerte</option>
+                <option value="conclusion">Conclusion</option>
+            </select><br><br>
+            <button onclick="calculateMonthlyNightBrightness()">Berechnen</button>
+        </div>
+        <div class="legend">
+            <h3>Legende</h3>
+            <div class="legend-grid">
+                <span class="color-box" style="background-color: white;"></span><span></span><span>>= 1000
+                    mlx</span><span>day light</span>
+                <span class="color-box" style="background-color: #ffff99;"></span><span>B(right)</span><span>10 - 1000
+                    mlx</span><span>NVG possible</span>
+                <span class="color-box" style="background-color: #ccffcc;"></span><span></span><span>0,7 - 10
+                    mlx</span><span>NVG usable</span>
+                <span class="color-box" style="background-color: #ffff99;"></span><span>D(ark)</span><span>0,1 - 0,7
+                    mlx</span><span>NVG restricted</span>
+                <span class="color-box" style="background-color: #ffcccc;"></span><span></span><span>
+                    <= 0,1 mlx</span><span>dark night</span>
+            </div>
+        </div>
+        <h2>Tabelle wolkenlos</h2>
+        <table id="tableWCalc" class="night-table"></table>
+        <h2>Tabelle bewölkt</h2>
+        <table id="tableBCalc" class="night-table"></table>
+        <div id="nightCalcResults"></div>
+        <div id="nightCalcError" class="error"></div>
+    </div>
+
+</body>
+<script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
+<script>
+    // Tab-Funktionalität
+    function openTab(evt, tabName) {
+        const tabcontent = document.getElementsByClassName("tabcontent");
+        for (let i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove("active");
+        }
+        const tablinks = document.getElementsByClassName("tablinks");
+        for (let i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    // Standard-Tab öffnen
+    document.getElementById("defaultOpen").click();
+
+    // Nachthelligkeiten Logik
+    const nightFileInput = document.getElementById('nightFileInput');
+    nightFileInput.addEventListener('change', processNightFile);
+
+    function processNightFile() {
+        const file = nightFileInput.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const text = e.target.result;
+            const rows = text.split('\n').map(row => row.split('\t').map(cell => cell.trim()));
+            const headers = rows[0];
+            headers[0] = headers[0].replace('wb', '');
+            const dataRows = rows.slice(1);
+
+            const wRows = dataRows.filter(row => row[0].endsWith('w'));
+            const bRows = dataRows.filter(row => row[0].endsWith('b'));
+
+            renderNightTable('tableW', headers, wRows);
+            renderNightTable('tableB', headers, bRows);
+        };
+        reader.readAsText(file);
+    }
+
+    function renderNightTable(tableId, headers, rows) {
+        const table = document.getElementById(tableId);
+        table.innerHTML = '';
+
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        headers.forEach(header => {
+            const th = document.createElement('th');
+            th.textContent = header;
+            headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        rows.forEach(row => {
+            const tr = document.createElement('tr');
+            row.forEach((cell, index) => {
+                const td = document.createElement('td');
+                const num = parseFloat(cell);
+
+                if (index === 0) {
+                    td.textContent = cell.slice(0, -1).trim();
+                } else if (!isNaN(num)) {
+                    if (num >= 10) {
+                        td.textContent = 'B';
+                        td.classList.add('big-value');
+                    } else if (num > 0.7 && num < 10) {
+                        td.textContent = '';
+                        td.classList.add('mid-value');
+                    } else if (num > 0.1 && num <= 0.7) {
+                        td.textContent = 'D';
+                        td.classList.add('low-value');
+                    } else if (num <= 0.1) {
+                        td.textContent = '';
+                        td.classList.add('tiny-value');
+                    }
+                } else {
+                    td.textContent = cell;
+                }
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+    }
+
+    // Schattenwurf Logik
+    const shadowFileInput = document.getElementById('shadowFileInput');
+    const heightInput = document.getElementById('height');
+    const tableBody = document.getElementById('tableBody');
+    const errorDiv = document.getElementById('error');
+
+    shadowFileInput.addEventListener('change', processShadowFile);
+    heightInput.addEventListener('input', () => {
+        if (shadowFileInput.files.length) {
+            processShadowFile();
+        }
+    });
+
+    function processShadowFile() {
+        errorDiv.textContent = '';
+
+        if (!shadowFileInput.files.length) {
+            errorDiv.textContent = 'Bitte wähle eine Datei aus!';
+            tableBody.innerHTML = '';
+            return;
+        }
+
+        const height = parseFloat(heightInput.value);
+        if (isNaN(height) || height <= 0) {
+            errorDiv.textContent = 'Bitte gib eine gültige Höhe > 0 ein!';
+            tableBody.innerHTML = '';
+            return;
+        }
+
+        const file = shadowFileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            const text = e.target.result;
+            const lines = text.split('\n');
+            const dataArray = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                const [time1, az1, el1, time2, az2, el2] = line.split('\t');
+                processShadowData(time1, az1, el1, height, dataArray);
+                if (time2) processShadowData(time2, az2, el2, height, dataArray);
+            }
+
+            dataArray.sort((a, b) => {
+                const timeA = parseTime(a.time);
+                const timeB = parseTime(b.time);
+                return timeA - timeB;
+            });
+
+            tableBody.innerHTML = '';
+            dataArray.forEach(data => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                        <td>${data.time}</td>
+                        <td>${data.azimuth.toFixed(1)}</td>
+                        <td>${data.elevation.toFixed(1)}</td>
+                        <td>${data.factor.toFixed(1)}</td>
+                        <td>${data.shadowLength.toFixed(1)}</td>
+                    `;
+                tableBody.appendChild(row);
+            });
+        };
+
+        reader.onerror = function () {
+            errorDiv.textContent = 'Fehler beim Lesen der Datei!';
+            tableBody.innerHTML = '';
+        };
+
+        reader.readAsText(file);
+    }
+
+    function processShadowData(time, azimuth, elevation, height, dataArray) {
+        elevation = parseFloat(elevation.replace(',', '.'));
+        azimuth = parseFloat(azimuth.replace(',', '.'));
+
+        if (elevation > 0) {
+            const elevationRad = elevation * Math.PI / 180;
+            const factor = 1 / Math.tan(elevationRad);
+            const shadowLength = height * factor;
+
+            dataArray.push({
+                time,
+                azimuth,
+                elevation,
+                factor,
+                shadowLength
+            });
+        }
+    }
+
+    function parseTime(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + minutes;
+    }
+
+    // Maxar Logik
+    const maxarFileInput = document.getElementById('maxarFileInput');
+    const shadowLengthInput = document.getElementById('shadowLength');
+    const manualSunElevationInput = document.getElementById('manualSunElevation');
+    const sunAzimuthSpan = document.getElementById('sunAzimuth');
+    const sunElevationSpan = document.getElementById('sunElevation');
+    const objectHeightSpan = document.getElementById('objectHeight');
+    const maxarErrorDiv = document.getElementById('maxarError');
+
+    let sunElevation = null;
+    let sunAzimuth = null;
+
+    maxarFileInput.addEventListener('change', processMaxarFile);
+    shadowLengthInput.addEventListener('input', calculateObjectHeight);
+    manualSunElevationInput.addEventListener('input', handleManualElevationChange);
+
+    // Handler für manuelle Elevationseingabe
+    function handleManualElevationChange() {
+        const manualElevation = parseFloat(manualSunElevationInput.value);
+        if (!isNaN(manualElevation)) {
+            sunElevation = manualElevation;
+            sunElevationSpan.textContent = sunElevation.toFixed(2);
+        } else {
+            // Wenn keine manuelle Eingabe, verwende JSON-Daten (falls vorhanden)
+            sunElevationSpan.textContent = sunElevation !== null ? sunElevation.toFixed(2) : 'N/A';
+        }
+        calculateObjectHeight();
+    }
+
+    function processMaxarFile() {
+        maxarErrorDiv.textContent = '';
+        sunAzimuthSpan.textContent = 'N/A';
+        sunElevationSpan.textContent = 'N/A';
+        objectHeightSpan.textContent = 'N/A';
+        sunElevation = null;
+        sunAzimuth = null;
+
+        if (!maxarFileInput.files.length) {
+            // Keine Datei ausgewählt, prüfe manuelle Eingabe
+            handleManualElevationChange();
+            return;
+        }
+
+        const file = maxarFileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            const text = e.target.result;
+
+            try {
+                const data = JSON.parse(text);
+                sunElevation = parseFloat(data.sun_elevation);
+                sunAzimuth = parseFloat(data.sun_azimuth);
+
+                sunAzimuthSpan.textContent = sunAzimuth.toFixed(2);
+                sunElevationSpan.textContent = sunElevation.toFixed(2);
+
+                // Prüfe, ob eine manuelle Eingabe vorliegt
+                const manualElevation = parseFloat(manualSunElevationInput.value);
+                if (!isNaN(manualElevation)) {
+                    sunElevation = manualElevation;
+                    sunElevationSpan.textContent = sunElevation.toFixed(2);
+                }
+
+                calculateObjectHeight();
+            } catch (error) {
+                maxarErrorDiv.textContent = 'Fehler beim Parsen der JSON-Datei!';
+                console.error(error);
+                // Prüfe manuelle Eingabe, falls JSON fehlschlägt
+                handleManualElevationChange();
+            }
+        };
+
+        reader.onerror = function () {
+            maxarErrorDiv.textContent = 'Fehler beim Lesen der Datei!';
+            // Prüfe manuelle Eingabe, falls Dateilesen fehlschlägt
+            handleManualElevationChange();
+        };
+
+        reader.readAsText(file);
+    }
+
+    function calculateObjectHeight() {
+        const shadowLength = parseFloat(shadowLengthInput.value);
+        const manualElevation = parseFloat(manualSunElevationInput.value);
+
+        if (isNaN(shadowLength) || shadowLength < 0) {
+            objectHeightSpan.textContent = 'N/A';
+            maxarErrorDiv.textContent = 'Bitte gib eine gültige Schattenlänge >= 0 ein!';
+            return;
+        }
+
+        // Verwende manuelle Sonnenelevation, falls vorhanden, sonst die aus der JSON-Datei
+        let effectiveElevation = !isNaN(manualElevation) ? manualElevation : sunElevation;
+
+        if (effectiveElevation === null || isNaN(effectiveElevation)) {
+            objectHeightSpan.textContent = 'N/A';
+            maxarErrorDiv.textContent = 'Bitte lade eine gültige JSON-Datei oder gib die Sonnenelevation manuell ein!';
+            return;
+        }
+
+        maxarErrorDiv.textContent = '';
+
+        const elevationRad = effectiveElevation * Math.PI / 180;
+        const factor = Math.tan(elevationRad);
+        const height = shadowLength * factor;
+
+        objectHeightSpan.textContent = height.toFixed(2);
+    }
+
+    // Sonne & Mond Logik mit SunCalc
+    const latitudeInput = document.getElementById('latitude');
+    const longitudeInput = document.getElementById('longitude');
+    const dateInput = document.getElementById('date');
+    const dawnSpan = document.getElementById('dawn');
+    const sunriseSpan = document.getElementById('sunrise');
+    const solarNoonSpan = document.getElementById('solarNoon');
+    const solarNoonAzimuthSpan = document.getElementById('solarNoonAzimuth');
+    const solarNoonElevationSpan = document.getElementById('solarNoonElevation');
+    const sunsetSpan = document.getElementById('sunset');
+    const duskSpan = document.getElementById('dusk');
+    const moonriseSpan = document.getElementById('moonrise');
+    const moonNoonSpan = document.getElementById('moonNoon');
+    const moonNoonAzimuthSpan = document.getElementById('moonNoonAzimuth');
+    const moonNoonElevationSpan = document.getElementById('moonNoonElevation');
+    const moonsetSpan = document.getElementById('moonset');
+    const moonPhaseSpan = document.getElementById('moonPhase');
+    const sunMoonErrorDiv = document.getElementById('sunMoonError');
+    const sortToggle = document.getElementById('sortToggle');
+    const utcToggle = document.getElementById('utcToggle');
+    const sunMoonTableBody = document.getElementById('sunMoonTableBody');
+
+    // Debugging: Überprüfe, ob alle Elemente gefunden wurden
+    console.log('dawnSpan:', dawnSpan);
+    console.log('sunriseSpan:', sunriseSpan);
+    console.log('solarNoonSpan:', solarNoonSpan);
+    console.log('solarNoonAzimuthSpan:', solarNoonAzimuthSpan);
+    console.log('solarNoonElevationSpan:', solarNoonElevationSpan);
+    console.log('sunsetSpan:', sunsetSpan);
+    console.log('duskSpan:', duskSpan);
+    console.log('moonriseSpan:', moonriseSpan);
+    console.log('moonNoonSpan:', moonNoonSpan);
+    console.log('moonNoonAzimuthSpan:', moonNoonAzimuthSpan);
+    console.log('moonNoonElevationSpan:', moonNoonElevationSpan);
+    console.log('moonsetSpan:', moonsetSpan);
+    console.log('moonPhaseSpan:', moonPhaseSpan);
+    console.log('sunMoonErrorDiv:', sunMoonErrorDiv);
+    console.log('sortToggle:', sortToggle);
+    console.log('utcToggle:', utcToggle);
+    console.log('sunMoonTableBody:', sunMoonTableBody);
+
+    let sunMoonData = [];
+
+    function calculateSunMoon() {
+        if (!sunMoonErrorDiv || !dawnSpan || !sunriseSpan || !solarNoonSpan || !solarNoonAzimuthSpan || !solarNoonElevationSpan || !sunsetSpan || !duskSpan || !moonriseSpan || !moonNoonSpan || !moonNoonAzimuthSpan || !moonNoonElevationSpan || !moonsetSpan || !moonPhaseSpan || !utcToggle) {
+            console.error('Ein oder mehrere Elemente wurden nicht gefunden!');
+            return;
+        }
+
+        sunMoonErrorDiv.textContent = '';
+        dawnSpan.textContent = 'N/A';
+        sunriseSpan.textContent = 'N/A';
+        solarNoonSpan.textContent = 'N/A';
+        solarNoonAzimuthSpan.textContent = 'N/A';
+        solarNoonElevationSpan.textContent = 'N/A';
+        sunsetSpan.textContent = 'N/A';
+        duskSpan.textContent = 'N/A';
+        moonriseSpan.textContent = 'N/A';
+        moonNoonSpan.textContent = 'N/A';
+        moonNoonAzimuthSpan.textContent = 'N/A';
+        moonNoonElevationSpan.textContent = 'N/A';
+        moonsetSpan.textContent = 'N/A';
+        moonPhaseSpan.textContent = 'N/A';
+
+        const lat = parseFloat(latitudeInput.value);
+        const lon = parseFloat(longitudeInput.value);
+        const date = new Date(dateInput.value);
+
+        // Validierung
+        if (isNaN(lat) || lat < -90 || lat > 90) {
+            sunMoonErrorDiv.textContent = 'Bitte gib einen gültigen Breitengrad zwischen -90 und 90 ein!';
+            return;
+        }
+        if (isNaN(lon) || lon < -180 || lon > 180) {
+            sunMoonErrorDiv.textContent = 'Bitte gib einen gültigen Längengrad zwischen -180 und 180 ein!';
+            return;
+        }
+        if (isNaN(date.getTime())) {
+            sunMoonErrorDiv.textContent = 'Bitte wähle ein gültiges Datum!';
+            return;
+        }
+
+        // Zeitformatierungsoptionen für hh:mm
+        const timeOptionsLocal = { hour: '2-digit', minute: '2-digit', hour12: false };
+        const timeOptionsUTC = { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' };
+        const timeOptions = utcToggle.checked ? timeOptionsUTC : timeOptionsLocal;
+
+        // Berechnungen mit SunCalc
+        const sunTimes = SunCalc.getTimes(date, lat, lon);
+        const moonTimes = SunCalc.getMoonTimes(date, lat, lon);
+        const moonIllumination = SunCalc.getMoonIllumination(date);
+
+        // Position für Sonnenspitze
+        const solarNoonPosition = SunCalc.getPosition(sunTimes.solarNoon, lat, lon);
+
+        // Höchststand Mond berechnen (maximale Elevation)
+        const moonNoon = findMoonNoon(date, lat, lon, utcToggle.checked);
+
+        // Daten für die Sortierung sammeln
+        sunMoonData = [
+            { event: 'Beginn bürgerliche Dämmerung (Morgen)', time: sunTimes.dawn, display: sunTimes.dawn.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions), azimuth: '', elevation: '', class: 'sun-row' },
+            { event: 'Sonnenaufgang', time: sunTimes.sunrise, display: sunTimes.sunrise.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions), azimuth: '', elevation: '', class: 'sun-row' },
+            {
+                event: 'Höchststand Sonne',
+                time: sunTimes.solarNoon,
+                display: sunTimes.solarNoon.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions),
+                azimuth: (((solarNoonPosition.azimuth * 180 / Math.PI) + 180) % 360).toFixed(1),
+                elevation: (solarNoonPosition.altitude * 180 / Math.PI).toFixed(1),
+                class: 'sun-row'
+            },
+            { event: 'Sonnenuntergang', time: sunTimes.sunset, display: sunTimes.sunset.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions), azimuth: '', elevation: '', class: 'sun-row' },
+            { event: 'Ende bürgerliche Dämmerung (Abend)', time: sunTimes.dusk, display: sunTimes.dusk.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions), azimuth: '', elevation: '', class: 'sun-row' },
+            { event: 'Mondaufgang', time: moonTimes.rise, display: moonTimes.rise ? moonTimes.rise.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions) : 'N/A', azimuth: '', elevation: '', class: 'moon-row' },
+            {
+                event: 'Höchststand Mond',
+                time: moonNoon.time,
+                display: moonNoon.time ? moonNoon.time.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions) : 'N/A',
+                azimuth: moonNoon.azimuth ? moonNoon.azimuth.toFixed(1) : 'N/A',
+                elevation: moonNoon.elevation ? moonNoon.elevation.toFixed(1) : 'N/A',
+                class: 'moon-row'
+            },
+            { event: 'Monduntergang', time: moonTimes.set, display: moonTimes.set ? moonTimes.set.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions) : 'N/A', azimuth: '', elevation: '', class: 'moon-row' },
+            { event: 'Mondphase', time: null, display: `${getMoonPhaseName(moonIllumination.phase)} (${(moonIllumination.fraction * 100).toFixed(1)}% beleuchtet)`, azimuth: '', elevation: '', class: 'moon-row' }
+        ];
+
+        // Tabelle rendern
+        renderTable();
+    }
+
+    // Funktion zum Finden des Mond-Höchststands
+    function findMoonNoon(date, lat, lon, useUTC) {
+        const startTime = new Date(date);
+        startTime.setHours(0, 0, 0, 0); // Start um Mitternacht
+
+        let maxElevation = -Infinity;
+        let moonNoonTime = null;
+        let moonNoonAzimuth = null;
+        let moonNoonElevation = null;
+
+        // Prüfe die Mondposition stündlich über 24 Stunden
+        for (let hour = 0; hour < 24; hour++) {
+            const checkTime = new Date(startTime.getTime() + hour * 60 * 60 * 1000);
+            const moonPosition = SunCalc.getMoonPosition(checkTime, lat, lon);
+            const elevation = moonPosition.altitude * 180 / Math.PI; // In Grad umrechnen
+
+            if (elevation > maxElevation) {
+                maxElevation = elevation;
+                moonNoonTime = checkTime;
+                moonNoonAzimuth = (moonPosition.azimuth * 180 / Math.PI + 180) % 360; // Azimut in Grad umrechnen
+                moonNoonElevation = elevation;
+            }
+        }
+
+        return {
+            time: moonNoonTime,
+            azimuth: moonNoonAzimuth,
+            elevation: moonNoonElevation
+        };
+    }
+
+    function getMoonPhaseName(phaseValue) {
+        if (phaseValue === 0) return 'Neumond';
+        else if (phaseValue < 0.25) return 'Zunehmender Sichelmond';
+        else if (phaseValue === 0.25) return 'Erstes Viertel';
+        else if (phaseValue < 0.5) return 'Zunehmender Mond';
+        else if (phaseValue === 0.5) return 'Vollmond';
+        else if (phaseValue < 0.75) return 'Abnehmender Mond';
+        else if (phaseValue === 0.75) return 'Letztes Viertel';
+        else return 'Abnehmender Sichelmond';
+    }
+
+    function renderTable() {
+        sunMoonTableBody.innerHTML = '';
+
+        let dataToRender = [...sunMoonData];
+
+        if (sortToggle.checked) {
+            const moonriseIndex = dataToRender.findIndex(item => item.event === 'Mondaufgang');
+            const moonPhaseIndex = dataToRender.findIndex(item => item.event === 'Mondphase');
+            if (moonriseIndex !== -1 && moonPhaseIndex !== -1 && moonriseIndex < moonPhaseIndex) {
+                const moonPhase = dataToRender.splice(moonPhaseIndex, 1)[0];
+                dataToRender.splice(moonriseIndex + 1, 0, moonPhase);
+            }
+
+            dataToRender.sort((a, b) => {
+                if (!a.time && !b.time) return 0;
+                if (!a.time) return 1;
+                if (!b.time) return -1;
+                return a.time - b.time;
+            });
+        }
+
+        dataToRender.forEach(item => {
+            const row = document.createElement('tr');
+            row.className = item.class;
+            row.innerHTML = `
+            <td>${item.event}</td>
+            <td>${item.display}</td>
+            <td>${item.azimuth}</td>
+            <td>${item.elevation}</td>
+        `;
+            sunMoonTableBody.appendChild(row);
+        });
+    }
+
+    function sortTable() {
+        renderTable();
+    }
+
+    dateInput.addEventListener('change', calculateSunMoon);
+
+    // Monatstabelle Logik mit SunCalc
+    const monthLatitudeInput = document.getElementById('monthLatitude');
+    const monthLongitudeInput = document.getElementById('monthLongitude');
+    const monthYearInput = document.getElementById('monthYear');
+    const monthUtcToggle = document.getElementById('monthUtcToggle');
+    const monthTableBody = document.getElementById('monthTableBody');
+    const monthTableErrorDiv = document.getElementById('monthTableError');
+
+    function calculateMonthTable() {
+        if (!monthTableErrorDiv || !monthTableBody) {
+            console.error('Ein oder mehrere Elemente für die Monatstabelle wurden nicht gefunden!');
+            return;
+        }
+
+        monthTableErrorDiv.textContent = '';
+        monthTableBody.innerHTML = '';
+
+        const lat = parseFloat(monthLatitudeInput.value);
+        const lon = parseFloat(monthLongitudeInput.value);
+        const monthYear = monthYearInput.value; // z.B. "2025-02"
+
+        // Validierung
+        if (isNaN(lat) || lat < -90 || lat > 90) {
+            monthTableErrorDiv.textContent = 'Bitte gib einen gültigen Breitengrad zwischen -90 und 90 ein!';
+            return;
+        }
+        if (isNaN(lon) || lon < -180 || lon > 180) {
+            monthTableErrorDiv.textContent = 'Bitte gib einen gültigen Längengrad zwischen -180 und 180 ein!';
+            return;
+        }
+        if (!monthYear) {
+            monthTableErrorDiv.textContent = 'Bitte wähle ein gültiges Monat und Jahr!';
+            return;
+        }
+
+        // Zeitformatierungsoptionen für hh:mm
+        const timeOptionsLocal = { hour: '2-digit', minute: '2-digit', hour12: false };
+        const timeOptionsUTC = { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' };
+        const timeOptions = monthUtcToggle.checked ? timeOptionsUTC : timeOptionsLocal;
+
+        const [year, month] = monthYear.split('-').map(Number); // z.B. [2025, 2]
+        const daysInMonth = new Date(year, month, 0).getDate(); // Anzahl Tage im Monat
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(year, month - 1, day); // Monat -1, da JS 0-basiert ist
+
+            // Sonnenzeiten
+            const sunTimes = SunCalc.getTimes(date, lat, lon);
+
+            // Mondzeiten
+            const moonTimes = SunCalc.getMoonTimes(date, lat, lon);
+
+            // Tabelle füllen
+            const row = document.createElement('tr');
+            row.innerHTML = `
+            <td>${day}</td>
+            <td>${sunTimes.nightEnd.toLocaleTimeString(monthUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions)}</td> <!-- Anfang astr. Dämmerung -->
+            <td>${sunTimes.night.toLocaleTimeString(monthUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions)}</td> <!-- Ende dunkle Nacht -->
+            <td>${sunTimes.nauticalDawn.toLocaleTimeString(monthUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions)}</td> <!-- Anfang naut. Dämmerung -->
+            <td>${sunTimes.dawn.toLocaleTimeString(monthUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions)}</td> <!-- Anfang bürg. Dämmerung -->
+            <td>${sunTimes.sunrise.toLocaleTimeString(monthUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions)}</td> <!-- Sonnenaufgang -->
+            <td>${sunTimes.sunset.toLocaleTimeString(monthUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions)}${isNextDay(sunTimes.sunset, date) ? '*' : ''}</td> <!-- Sonnenuntergang -->
+            <td>${sunTimes.dusk.toLocaleTimeString(monthUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions)}${isNextDay(sunTimes.dusk, date) ? '*' : ''}</td> <!-- Ende bürg. Dämmerung -->
+            <td>${sunTimes.nauticalDusk.toLocaleTimeString(monthUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions)}${isNextDay(sunTimes.nauticalDusk, date) ? '*' : ''}</td> <!-- Ende naut. Dämmerung -->
+            <td>${sunTimes.night.toLocaleTimeString(monthUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions)}${isNextDay(sunTimes.night, date) ? '*' : ''}</td> <!-- Anfang dunkle Nacht -->
+            <td>${sunTimes.nightEnd.toLocaleTimeString(monthUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions)}${isNextDay(sunTimes.nightEnd, date) ? '*' : ''}</td> <!-- Ende astr. Dämmerung -->
+            <td>${moonTimes.rise ? moonTimes.rise.toLocaleTimeString(monthUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions) : '**:**'}</td> <!-- Mondaufgang -->
+            <td>${moonTimes.set ? moonTimes.set.toLocaleTimeString(monthUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions) : '**:**'}</td> <!-- Monduntergang -->
+        `;
+            monthTableBody.appendChild(row);
+        }
+    }
+
+    // Hilfsfunktion: Prüft, ob ein Zeitpunkt am nächsten Tag liegt
+    function isNextDay(time, baseDate) {
+        const baseDay = baseDate.getDate();
+        const timeDay = time.getDate();
+        return timeDay !== baseDay;
+    }
+
+    // Event-Listener für Eingaben
+    monthYearInput.addEventListener('change', calculateMonthTable);
+
+    // Tagesdaten Logik mit SunCalc
+    const dayLatitudeInput = document.getElementById('dayLatitude');
+    const dayLongitudeInput = document.getElementById('dayLongitude');
+    const dayDateInput = document.getElementById('dayDate');
+    const startTimeInput = document.getElementById('startTime');
+    const objectHeightInput = document.getElementById('objectHeightInput');
+    const dayUtcToggle = document.getElementById('dayUtcToggle');
+    const sunDayTableBody = document.getElementById('sunDayTableBody');
+    const moonDayTableBody = document.getElementById('moonDayTableBody');
+    const dayDataErrorDiv = document.getElementById('dayDataError');
+    const polarChartCanvas = document.getElementById('polarChart');
+
+    function calculateDayData() {
+        if (!dayDataErrorDiv || !objectHeightInput || !polarChartCanvas || !startTimeInput) {
+            console.error('Ein oder mehrere Elemente für die Tagesdaten wurden nicht gefunden!');
+            return;
+        }
+
+        dayDataErrorDiv.textContent = '';
+        const combinedDayTableBody = document.getElementById('combinedDayTableBody');
+        combinedDayTableBody.innerHTML = ''; // Tabelle leeren
+
+        const lat = parseFloat(dayLatitudeInput.value);
+        const lon = parseFloat(dayLongitudeInput.value);
+        const date = new Date(dayDateInput.value);
+        const startTime = startTimeInput.value;
+        const height = parseFloat(objectHeightInput.value);
+
+        // Validierung
+        if (isNaN(lat) || lat < -90 || lat > 90) {
+            dayDataErrorDiv.textContent = 'Bitte gib einen gültigen Breitengrad zwischen -90 und 90 ein!';
+            return;
+        }
+        if (isNaN(lon) || lon < -180 || lon > 180) {
+            dayDataErrorDiv.textContent = 'Bitte gib einen gültigen Längengrad zwischen -180 und 180 ein!';
+            return;
+        }
+        if (isNaN(date.getTime())) {
+            dayDataErrorDiv.textContent = 'Bitte wähle ein gültiges Startdatum!';
+            return;
+        }
+        if (!startTime) {
+            dayDataErrorDiv.textContent = 'Bitte gib eine gültige Startuhrzeit ein!';
+            return;
+        }
+        if (isNaN(height) || height <= 0) {
+            dayDataErrorDiv.textContent = 'Bitte gib eine gültige Höhe > 0 ein!';
+            return;
+        }
+
+        // Startzeitpunkt setzen
+        const [hours, minutes] = startTime.split(':').map(Number);
+        const startDateTime = new Date(date);
+        startDateTime.setHours(hours, minutes, 0, 0);
+
+        // Zeitformatierungsoptionen für hh:mm
+        const timeOptionsLocal = { hour: '2-digit', minute: '2-digit', hour12: false };
+        const timeOptionsUTC = { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' };
+        const timeOptions = dayUtcToggle.checked ? timeOptionsUTC : timeOptionsLocal;
+
+        // Sonnen- und Mondzeiten für Aufgang/Untergang im 24-Stunden-Zeitraum
+        const endDateTime = new Date(startDateTime.getTime() + 24 * 60 * 60 * 1000);
+        const events = [];
+
+        // Sonnenereignisse
+        let currentDate = new Date(startDateTime);
+        while (currentDate <= endDateTime) {
+            const sunTimes = SunCalc.getTimes(currentDate, lat, lon);
+            if (sunTimes.sunrise >= startDateTime && sunTimes.sunrise <= endDateTime) {
+                const position = SunCalc.getPosition(sunTimes.sunrise, lat, lon);
+                events.push({ name: 'Sonnenaufgang', time: sunTimes.sunrise, position: position, color: 'orange' });
+            }
+            if (sunTimes.sunset >= startDateTime && sunTimes.sunset <= endDateTime) {
+                const position = SunCalc.getPosition(sunTimes.sunset, lat, lon);
+                events.push({ name: 'Sonnenuntergang', time: sunTimes.sunset, position: position, color: 'orange' });
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        // Mondereignisse
+        currentDate = new Date(startDateTime);
+        while (currentDate <= endDateTime) {
+            const moonTimes = SunCalc.getMoonTimes(currentDate, lat, lon);
+            if (moonTimes.rise && moonTimes.rise >= startDateTime && moonTimes.rise <= endDateTime) {
+                const position = SunCalc.getMoonPosition(moonTimes.rise, lat, lon);
+                events.push({ name: 'Mondaufgang', time: moonTimes.rise, position: position, color: 'blue' });
+            }
+            if (moonTimes.set && moonTimes.set >= startDateTime && moonTimes.set <= endDateTime) {
+                const position = SunCalc.getMoonPosition(moonTimes.set, lat, lon);
+                events.push({ name: 'Monduntergang', time: moonTimes.set, position: position, color: 'blue' });
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        // Daten für Polardiagramm und Tabelle
+        const sunPositions = [];
+        const moonPositions = [];
+        const labels = [];
+
+        // Halbstündliche Daten für die nächsten 24 Stunden ab Startzeitpunkt
+        for (let halfHour = 0; halfHour < 48; halfHour++) {
+            const checkTime = new Date(startDateTime.getTime() + halfHour * 30 * 60 * 1000);
+
+            // Sonnenposition
+            const sunPosition = SunCalc.getPosition(checkTime, lat, lon);
+            const sunAzimuth = (((sunPosition.azimuth * 180 / Math.PI) + 180) % 360).toFixed(1);
+            const sunElevation = (sunPosition.altitude * 180 / Math.PI).toFixed(1);
+            const sunShadowLength = sunElevation > 0 ? (height / Math.tan(sunPosition.altitude)).toFixed(1) : 'N/A';
+
+            // Mondposition
+            const moonPosition = SunCalc.getMoonPosition(checkTime, lat, lon);
+            const moonAzimuth = ((moonPosition.azimuth * 180 / Math.PI + 180) % 360).toFixed(1);
+            const moonElevation = (moonPosition.altitude * 180 / Math.PI).toFixed(1);
+            const moonShadowLength = moonElevation > 0 ? (height / Math.tan(moonPosition.altitude)).toFixed(1) : 'N/A';
+
+            // Kombinierte Zeile für Sonne und Mond
+            const row = document.createElement('tr');
+            row.innerHTML = `
+            <td>${checkTime.toLocaleTimeString(dayUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions)}</td>
+            <td class="combined-sun">${sunAzimuth}</td>
+            <td class="combined-sun">${sunElevation}</td>
+            <td class="combined-sun">${sunShadowLength}</td>
+            <td class="combined-moon">${moonAzimuth}</td>
+            <td class="combined-moon">${moonElevation}</td>
+            <td class="combined-moon">${moonShadowLength}</td>
+        `;
+            combinedDayTableBody.appendChild(row);
+
+            // Daten für Polardiagramm sammeln
+            labels.push(checkTime.toLocaleTimeString(dayUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions));
+            sunPositions.push({ time: checkTime, azimuth: parseFloat(sunAzimuth), elevation: parseFloat(sunElevation) });
+            moonPositions.push({ time: checkTime, azimuth: parseFloat(moonAzimuth), elevation: parseFloat(moonElevation) });
+        }
+
+        // Füge Auf- und Untergangspositionen in die Datenreihe ein
+        events.forEach(event => {
+            const azimuth = (((event.position.azimuth * 180 / Math.PI) + 180) % 360);
+            const elevation = Math.max(0, event.position.altitude * 180 / Math.PI);
+            if (event.name.includes('Sonne')) {
+                sunPositions.push({ time: event.time, azimuth: azimuth, elevation: elevation });
+            } else {
+                moonPositions.push({ time: event.time, azimuth: azimuth, elevation: elevation });
+            }
+        });
+
+        // Sortiere die Positionen nach Zeit
+        sunPositions.sort((a, b) => a.time - b.time);
+        moonPositions.sort((a, b) => a.time - b.time);
+
+        // Polardiagramm rendern
+        renderPolarChart(sunPositions, moonPositions, labels, events, timeOptions);
+    }
+
+    // Funktion zum Rendern des Polardiagramms
+    function renderPolarChart(sunPositions, moonPositions, labels, events, timeOptions) {
+        const ctx = polarChartCanvas.getContext('2d');
+        ctx.clearRect(0, 0, polarChartCanvas.width, polarChartCanvas.height);
+
+        const width = polarChartCanvas.width;
+        const height = polarChartCanvas.height;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const maxRadius = Math.min(width, height) / 2 - 80;
+
+        // Checkbox-Werte abrufen
+        const showSun = document.getElementById('showSun').checked;
+        const showMoon = document.getElementById('showMoon').checked;
+        console.log('renderPolarChart aufgerufen - showSun:', showSun, 'showMoon:', showMoon);
+
+        // Zeichne Hintergrund (Kreise für Elevation)
+        ctx.strokeStyle = '#ccc';
+        ctx.lineWidth = 1;
+        for (let elevation = 0; elevation <= 90; elevation += 30) {
+            const radius = (1 - elevation / 90) * maxRadius;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${elevation}°`, centerX, centerY - radius - 10);
+        }
+
+        // Zeichne Radiale für Azimut (alle 45°)
+        for (let azimuth = 0; azimuth < 360; azimuth += 45) {
+            const angleRad = (azimuth * Math.PI) / 180;
+            const x = centerX + maxRadius * Math.sin(angleRad);
+            const y = centerY - maxRadius * Math.cos(angleRad);
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+
+        // Zeichne Himmelsrichtungen
+        ctx.fillStyle = '#000';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const directions = [
+            { label: 'N', angle: 0 },
+            { label: 'NE', angle: 45 },
+            { label: 'E', angle: 90 },
+            { label: 'SE', angle: 135 },
+            { label: 'S', angle: 180 },
+            { label: 'SW', angle: 225 },
+            { label: 'W', angle: 270 },
+            { label: 'NW', angle: 315 }
+        ];
+        directions.forEach(dir => {
+            const angleRad = (dir.angle * Math.PI) / 180;
+            const x = centerX + (maxRadius + 20) * Math.sin(angleRad);
+            const y = centerY - (maxRadius + 20) * Math.cos(angleRad);
+            ctx.fillText(dir.label, x, y);
+        });
+
+        // Zeichne Sonnenverlauf (nur wenn aktiviert)
+        if (showSun) {
+            ctx.strokeStyle = 'orange';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            let firstPoint = true;
+            sunPositions.forEach((pos) => {
+                if (pos.elevation < 0) return;
+                const angleRad = (pos.azimuth * Math.PI) / 180;
+                const radius = (1 - pos.elevation / 90) * maxRadius;
+                const x = centerX + radius * Math.sin(angleRad);
+                const y = centerY - radius * Math.cos(angleRad);
+                if (firstPoint) {
+                    ctx.moveTo(x, y);
+                    firstPoint = false;
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+        }
+
+        // Zeichne Mondverlauf (nur wenn aktiviert)
+        if (showMoon) {
+            ctx.strokeStyle = 'blue';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            let firstPoint = true;
+            moonPositions.forEach((pos) => {
+                if (pos.elevation < 0) return;
+                const angleRad = (pos.azimuth * Math.PI) / 180;
+                const radius = (1 - pos.elevation / 90) * maxRadius;
+                const x = centerX + radius * Math.sin(angleRad);
+                const y = centerY - radius * Math.cos(angleRad);
+                if (firstPoint) {
+                    ctx.moveTo(x, y);
+                    firstPoint = false;
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+        }
+
+        // Zeichne Aufgangs- und Untergangspunkte (abhängig von Checkboxen)
+        const labelPositions = []; // Speichere Positionen und Azimut für Überlappungsprüfung
+
+        events.forEach((event, index) => {
+            const isSunEvent = event.name.includes('Sonne');
+            if ((isSunEvent && !showSun) || (!isSunEvent && !showMoon)) return;
+
+            const azimuth = (((event.position.azimuth * 180 / Math.PI) + 180) % 360);
+            const elevation = Math.max(0, event.position.altitude * 180 / Math.PI);
+            const angleRad = (azimuth * Math.PI) / 180;
+            const radius = (1 - elevation / 90) * maxRadius;
+            const x = centerX + radius * Math.sin(angleRad);
+            const y = centerY - radius * Math.cos(angleRad);
+
+            // Punkt zeichnen
+            ctx.fillStyle = event.color;
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Zeitbeschriftung
+            const timeStr = event.time.toLocaleTimeString(dayUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions);
+            const day = event.time.getDate().toString().padStart(2, '0');
+            const month = (event.time.getMonth() + 1).toString().padStart(2, '0');
+            const dateStr = `${day}.${month}.`;
+            const dateTimeStr = `${dateStr} ${timeStr}`;
+
+            // Standardposition der Beschriftung
+            let labelX = centerX + (maxRadius + 38) * Math.sin(angleRad);
+            let labelY = centerY - (maxRadius + 38) * Math.cos(angleRad);
+
+            // Prüfe auf Überlappung mit vorherigen Beschriftungen
+            let offsetY = 0;
+            let offsetX = 0;
+            const azimuthThreshold = 10; // Azimut-Differenz, bei der eine Verschiebung nötig ist
+            const verticalSpacing = 40; // Vertikaler Abstand bei Verschiebung
+            const horizontalSpacing = 10; // Horizontaler Abstand bei Verschiebung
+
+            labelPositions.forEach(pos => {
+                const azimuthDiff = Math.abs(azimuth - pos.azimuth);
+                if (azimuthDiff < azimuthThreshold) {
+                    // Überlappung erkannt, verschiebe die Beschriftung
+                    if (Math.abs(labelY - pos.labelY) < verticalSpacing) {
+                        // Vertikale Verschiebung
+                        if (labelY < centerY) {
+                            offsetY -= verticalSpacing; // Nach oben verschieben
+                        } else {
+                            offsetY += verticalSpacing; // Nach unten verschieben
+                        }
+                    }
+                    if (Math.abs(labelX - pos.labelX) < horizontalSpacing) {
+                        // Horizontale Verschiebung
+                        if (labelX < centerX) {
+                            offsetX -= horizontalSpacing; // Nach links verschieben
+                        } else {
+                            offsetX += horizontalSpacing; // Nach rechts verschieben
+                        }
+                    }
+                }
+            });
+
+            // Wende die Verschiebung an
+            labelX += offsetX;
+            labelY += offsetY;
+
+            // Zeichne die Beschriftung
+            ctx.fillStyle = '#000';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(event.name, labelX, labelY - 20);
+            ctx.fillText(dateTimeStr, labelX, labelY);
+
+            // Speichere die Position für die nächste Überlappungsprüfung
+            labelPositions.push({ azimuth, labelX, labelY });
+        });
+
+        // Legende (nur für sichtbare Elemente)
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'left';
+        let legendY = centerY + maxRadius + 50; // Reduziere von 75 auf 50
+        if (showSun) {
+            ctx.fillStyle = 'orange';
+            ctx.fillRect(centerX - 50, legendY - 5, 20, 10);
+            ctx.fillStyle = '#000';
+            ctx.fillText('Sonne', centerX - 25, legendY);
+            legendY += 20;
+        }
+        if (showMoon) {
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(centerX - 50, legendY - 5, 20, 10);
+            ctx.fillStyle = '#000';
+            ctx.fillText('Mond', centerX - 25, legendY);
+        }
+    }
+
+    // Event-Listener für Eingaben
+    dayDateInput.addEventListener('change', calculateDayData);
+    startTimeInput.addEventListener('change', calculateDayData);
+    objectHeightInput.addEventListener('change', calculateDayData);
+
+    // Funktion zum Setzen des aktuellen Datums
+    function setCurrentDate() {
+        const today = new Date(); // Heute ist 2025-04-08 gemäß Vorgabe
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Monat ist 0-basiert, daher +1
+        const day = String(today.getDate()).padStart(2, '0');
+
+        // Format für type="date" ist YYYY-MM-DD
+        const dateString = `${year}-${month}-${day}`;
+        // Format für type="month" ist YYYY-MM
+        const monthString = `${year}-${month}`;
+
+        // Setze die Werte in den Eingabefeldern
+        document.getElementById('date').value = dateString;        // Sonne & Mond
+        document.getElementById('monthYear').value = monthString; // Monatstabelle
+        document.getElementById('dayDate').value = dateString;    // Tagesdaten
+    }
+
+    // Funktion zur Synchronisierung der Koordinaten
+    function syncCoordinates(sourceField) {
+        const latitudeInputs = [
+            document.getElementById('latitude'),      // Sonne & Mond
+            document.getElementById('monthLatitude'), // Monatstabelle
+            document.getElementById('dayLatitude')    // Tagesdaten
+        ];
+        const longitudeInputs = [
+            document.getElementById('longitude'),      // Sonne & Mond
+            document.getElementById('monthLongitude'), // Monatstabelle
+            document.getElementById('dayLongitude')    // Tagesdaten
+        ];
+
+        // Bestimme, ob Breiten- oder Längengrad geändert wurde
+        const isLatitude = sourceField.id.includes('Latitude') || sourceField.id === 'latitude';
+        const isLongitude = sourceField.id.includes('Longitude') || sourceField.id === 'longitude';
+        const value = sourceField.value;
+
+        // Synchronisiere die Werte in den entsprechenden Feldern
+        if (isLatitude) {
+            latitudeInputs.forEach(input => {
+                if (input !== sourceField) {
+                    input.value = value;
+                }
+            });
+        } else if (isLongitude) {
+            longitudeInputs.forEach(input => {
+                if (input !== sourceField) {
+                    input.value = value;
+                }
+            });
+        }
+
+        // Führe die Berechnungen in den betroffenen Tabs aus
+        if (sunMoonTableBody.innerHTML !== '') {
+            calculateSunMoon();
+        }
+        if (monthTableBody.innerHTML !== '') {
+            calculateMonthTable();
+        }
+        if (document.getElementById('combinedDayTableBody').innerHTML !== '') {
+            calculateDayData();
+        }
+    }
+
+    // Synchronisiere Koordinaten bei Änderung
+    latitudeInput.addEventListener('change', function () {
+        syncCoordinates(this);
+    });
+    longitudeInput.addEventListener('change', function () {
+        syncCoordinates(this);
+    });
+    monthLatitudeInput.addEventListener('change', function () {
+        syncCoordinates(this);
+    });
+    monthLongitudeInput.addEventListener('change', function () {
+        syncCoordinates(this);
+    });
+    dayLatitudeInput.addEventListener('change', function () {
+        syncCoordinates(this);
+    });
+    dayLongitudeInput.addEventListener('change', function () {
+        syncCoordinates(this);
+    });
+
+    function calculateNightBrightnessCalc() {
+        const lat = parseFloat(document.getElementById('nightCalcLatitude').value);
+        const lon = parseFloat(document.getElementById('nightCalcLongitude').value);
+        const dateStr = document.getElementById('nightCalcDate').value;
+        const interval = parseInt(document.getElementById('nightCalcInterval').value);
+        const utcToggle = document.getElementById('nightCalcUtcToggle').checked;
+        const errorDiv = document.getElementById('nightCalcError');
+
+        if (isNaN(lat) || lat < -90 || lat > 90 || isNaN(lon) || lon < -180 || lon > 180 || !dateStr || isNaN(interval) || interval < 1) {
+            errorDiv.textContent = 'Bitte gib gültige Werte ein!';
+            return;
+        }
+        errorDiv.textContent = '';
+
+        const date = new Date(dateStr);
+        const startTime = new Date(date.setHours(0, 0, 0, 0));
+        const endTime = new Date(startTime.getTime() + 24 * 60 * 60 * 1000);
+
+        const timeOptions = utcToggle ? { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' } : { hour: '2-digit', minute: '2-digit', hour12: false };
+
+        const headers = ['Zeit'];
+        const wCategories = ['Kategorie'];
+        const wValues = ['Wert (mlx)'];
+        const bCategories = ['Kategorie'];
+        const bValues = ['Wert (mlx)'];
+
+        for (let time = new Date(startTime); time < endTime; time.setMinutes(time.getMinutes() + interval)) {
+            const sunPos = SunCalc.getPosition(time, lat, lon);
+            const moonPos = SunCalc.getMoonPosition(time, lat, lon);
+            const moonIllum = SunCalc.getMoonIllumination(time);
+
+            const sunElevation = sunPos.altitude * 180 / Math.PI;
+            const moonElevation = moonPos.altitude * 180 / Math.PI;
+            const moonFraction = moonIllum.fraction;
+
+            const timeStr = time.toLocaleTimeString(utcToggle ? 'en-US' : 'de-DE', timeOptions);
+
+            if (sunElevation < -6) { // Nachtzeiten
+                // Sternenlicht-Basis
+                let brightnessW = 1.6; // Wolkenlos
+                let brightnessB = 0.5; // Bewölkt
+
+                // Mondhelligkeit, wenn Mond über dem Horizont
+                if (moonElevation > 0) {
+                    const sinHm = Math.sin(moonPos.altitude);
+                    brightnessW = 1.6 + 931.9 * moonFraction * moonFraction * sinHm; // Wolkenlos
+                    brightnessB = 0.5 + 267.5 * moonFraction * moonFraction * sinHm; // Bewölkt
+                }
+
+                headers.push(timeStr);
+                wCategories.push(getBrightnessCategory(brightnessW));
+                wValues.push(brightnessW.toFixed(2));
+                bCategories.push(getBrightnessCategory(brightnessB));
+                bValues.push(brightnessB.toFixed(2));
+
+                console.log(`Time: ${timeStr}, MoonFraction: ${moonFraction.toFixed(2)}, SinHm: ${moonElevation > 0 ? Math.sin(moonPos.altitude).toFixed(2) : '0.00'}, BrightnessW: ${brightnessW.toFixed(2)}, BrightnessB: ${brightnessB.toFixed(2)}`);
+            } else {
+                console.log(`Time: ${timeStr}, SunElevation: ${sunElevation.toFixed(2)}, MoonElevation: ${moonElevation.toFixed(2)} - Skipped`);
+            }
+        }
+
+        renderNightCalcTable('tableWCalc', headers, wCategories, wValues);
+        renderNightCalcTable('tableBCalc', headers, bCategories, bValues);
+    }
+
+    function getBrightnessCategory(brightness) {
+        if (brightness >= 1000) return ''; // Tageslicht
+        else if (brightness >= 10) return 'B';
+        else if (brightness > 0.7) return '';
+        else if (brightness > 0.1) return 'D';
+        else return '';
+    }
+
+    function renderNightCalcTable(tableId, headers, values) {
+        const table = document.getElementById(tableId);
+        if (!table) {
+            console.error(`Table with ID "${tableId}" not found!`);
+            return;
+        }
+
+        const displayMode = document.getElementById('displayMode')?.value || 'numbers';
+        console.log('Rendering table with displayMode:', displayMode);
+
+        table.innerHTML = '';
+
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        headers.forEach(header => {
+            const th = document.createElement('th');
+            th.textContent = header;
+            headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        values.forEach(row => {
+            const tr = document.createElement('tr');
+            row.forEach((val, index) => {
+                const td = document.createElement('td');
+                if (index === 0) {
+                    td.textContent = val;
+                } else if (val === '*****') {
+                    td.textContent = '';
+                    td.style.backgroundColor = 'white';
+                } else {
+                    const num = parseFloat(val);
+                    if (displayMode === 'numbers') {
+                        td.textContent = val;
+                        if (num >= 10 && num < 1000) {
+                            td.classList.add('big-value');
+                        } else if (num > 0.7 && num < 10) {
+                            td.classList.add('mid-value');
+                        } else if (num > 0.1 && num <= 0.7) {
+                            td.classList.add('low-value');
+                        } else if (num <= 0.1) {
+                            td.classList.add('tiny-value');
+                        }
+                    } else {
+                        if (num >= 10 && num < 1000) {
+                            td.textContent = 'B';
+                            td.classList.add('big-value');
+                        } else if (num > 0.7 && num < 10) {
+                            td.textContent = '';
+                            td.classList.add('mid-value');
+                        } else if (num > 0.1 && num <= 0.7) {
+                            td.textContent = 'D';
+                            td.classList.add('low-value');
+                        } else if (num <= 0.1) {
+                            td.textContent = '';
+                            td.classList.add('tiny-value');
+                        }
+                    }
+                }
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+    }
+
+    // Hilfsfunktion: Berechnet die Nachthimmelshelligkeit in mag/arcsec²
+    // Finale Funktion
+    function calculateSkyBrightnessMAG(time, lat, lon, moonIllum, moonPos) {
+        const moonFraction = moonIllum.fraction; // Beleuchteter Anteil des Mondes (0 bis 1)
+        const moonElevation = moonPos.altitude * 180 / Math.PI; // Mondhöhe in Grad
+        const phaseAngle = Math.acos(2 * moonFraction - 1) * 180 / Math.PI; // Phasenwinkel in Grad
+        const zenithDistance = 90 - moonElevation; // Zenitdistanz des Mondes
+        const airmass = zenithDistance <= 80 ? 1 / Math.cos(zenithDistance * Math.PI / 180) : 40; // Näherung für Airmass
+        const k = 0.3; // Extinktionskoeffizient (typisch für klare Nächte, anpassbar)
+
+        // Grundhelligkeit (Sternenlicht + Airglow) in mag/arcsec²
+        let skyBrightness = 22.0; // Typisch für dunklen Himmel (ohne Mond)
+
+        // Mondlichtbeitrag, wenn Mond über dem Horizont
+        if (moonElevation > 0) {
+            // Mondmagnitude nach Krisciunas & Schaefer
+            const mMoon = -12.73 + 0.026 * Math.abs(phaseAngle) + 4e-9 * Math.pow(phaseAngle, 4);
+
+            // Dynamischer Winkelabstand: ρ = Zenitdistanz des Mondes
+            const rho = 90 - moonElevation; // in Grad
+
+            // Cosinus-basierte Streufunktion (in nanoLamberts)
+            const k_flux = 1e-6; // Kalibrierungskonstante
+            const C_rho = k_flux * (1 + Math.cos(rho * Math.PI / 180)) * moonFraction;
+
+            // Umrechnung in cd/m²
+            const flux_nL = C_rho; // nanoLamberts
+            const flux_cd_m2 = flux_nL * 1e-9 * 3.183e-3; // Umrechnung in cd/m²
+
+            // Umrechnung in mag/arcsec²
+            const moonBrightness = -2.5 * Math.log10(flux_cd_m2 / (3.28e-6)) + mMoon + k * airmass;
+
+            // Summierung der Flüsse
+            skyBrightness = -2.5 * Math.log10(Math.pow(10, -0.4 * skyBrightness) +
+                Math.pow(10, -0.4 * moonBrightness));
+        }
+
+        return skyBrightness; // Rückgabe in mag/arcsec²
+    }
+
+    // Funktion mit dynamischem ρ und Ausgabe in Millilux (mlx)
+    function calculateSkyBrightnessDARKNIGHT(time, lat, lon, moonIllum, moonPos) {
+        const moonFraction = moonIllum.fraction; // Beleuchteter Anteil des Mondes (0 bis 1)
+        const moonElevation = moonPos.altitude * 180 / Math.PI; // Mondhöhe in Grad
+        const phaseAngle = Math.acos(2 * moonFraction - 1) * 180 / Math.PI; // Phasenwinkel in Grad
+        const zenithDistance = 90 - moonElevation; // Zenitdistanz des Mondes
+        const airmass = zenithDistance <= 80 ? 1 / Math.cos(zenithDistance * Math.PI / 180) : 40; // Näherung für Airmass
+        const k = 0.3; // Extinktionskoeffizient (typisch für klare Nächte, anpassbar)
+
+        // Grundhelligkeit (Sternenlicht + Airglow) in mag/arcsec²
+        let skyBrightnessMag = 22.0; // Typisch für dunklen Himmel (ohne Mond)
+
+        // Mondlichtbeitrag, wenn Mond über dem Horizont
+        if (moonElevation > 0) {
+            // Mondmagnitude nach Krisciunas & Schaefer
+            const mMoon = -12.73 + 0.026 * Math.abs(phaseAngle) + 4e-9 * Math.pow(phaseAngle, 4);
+
+            // Dynamischer Winkelabstand: ρ = Zenitdistanz des Mondes
+            const rho = 90 - moonElevation; // in Grad
+
+            // Cosinus-basierte Streufunktion (in nanoLamberts)
+            const k_flux = 1e-6; // Kalibrierungskonstante
+            const C_rho = k_flux * (1 + Math.cos(rho * Math.PI / 180)) * moonFraction;
+
+            // Umrechnung in cd/m²
+            const flux_nL = C_rho; // nanoLamberts
+            const flux_cd_m2 = flux_nL * 1e-9 * 3.183e-3; // Umrechnung in cd/m²
+
+            // Umrechnung in mag/arcsec²
+            const moonBrightness = -2.5 * Math.log10(flux_cd_m2 / (3.28e-6)) + mMoon + k * airmass;
+
+            // Summierung der Flüsse
+            skyBrightnessMag = -2.5 * Math.log10(Math.pow(10, -0.4 * skyBrightnessMag) +
+                Math.pow(10, -0.4 * moonBrightness));
+        }
+
+        // Umrechnung in Millilux (mlx)
+        const brightnessW = Math.pow(10, -0.4 * (skyBrightnessMag - 22.4775)); // Wolkenlos
+        // Bewölkt: Reduziere den Fluss auf ~25% des wolkenlosen Werts (angepasst an Tabelle)
+        const brightnessB = brightnessW * 0.25; // Empirischer Faktor basierend auf Tabelle
+
+        return { brightnessW, brightnessB }; // Rückgabe als Objekt in mlx
+    }
+
+    //Finale Funktion für die Helligkeiten
+    function calculateSkyBrightness(time, lat, lon, moonIllum, moonPos, sunPos) {
+        const moonFraction = moonIllum.fraction;
+        const moonElevation = moonPos.altitude * 180 / Math.PI;
+        const sunElevation = sunPos.altitude * 180 / Math.PI;
+        const phaseAngle = Math.acos(2 * moonFraction - 1) * 180 / Math.PI;
+        const zenithDistance = 90 - moonElevation;
+        const airmass = zenithDistance <= 80 ? 1 / Math.cos(zenithDistance * Math.PI / 180) : 40;
+        const k = 0.3;
+
+        // Grundhelligkeit (Sternenlicht + Airglow) in mag/arcsec²
+        let skyBrightnessMag = 22.0;
+
+        // Mondlichtbeitrag, wenn Mond über dem Horizont
+        let moonBrightness = 0;
+        if (moonElevation > 0) {
+            const mMoon = -12.73 + 0.026 * Math.abs(phaseAngle) + 4e-9 * Math.pow(phaseAngle, 4);
+            const rho = 90 - moonElevation;
+            const k_flux = 1e-6;
+            const C_rho = k_flux * (1 + Math.cos(rho * Math.PI / 180)) * moonFraction;
+            const flux_nL = C_rho;
+            const flux_cd_m2 = flux_nL * 1e-9 * 3.183e-3;
+            moonBrightness = -2.5 * Math.log10(flux_cd_m2 / (3.28e-6)) + mMoon + k * airmass;
+        }
+
+        // Sonnenlichtbeitrag während der Dämmerung (Sonnenhöhe < 0°)
+        let sunBrightness = 0;
+        if (sunElevation < 0 && sunElevation >= -18) {
+            // Empirisches Modell: Angepasster Faktor für realistischere Werte
+            sunBrightness = 22.0 - 0.58 * (sunElevation + 18); // Faktor -0.58
+        } else if (sunElevation >= 0) {
+            // Tageslicht: Sehr hohe Helligkeit
+            sunBrightness = -10;
+        }
+
+        // Kombination der Flüsse
+        skyBrightnessMag = -2.5 * Math.log10(
+            Math.pow(10, -0.4 * skyBrightnessMag) +
+            (moonBrightness ? Math.pow(10, -0.4 * moonBrightness) : 0) +
+            (sunBrightness ? Math.pow(10, -0.4 * sunBrightness) : 0)
+        );
+
+        // Umrechnung in Millilux (mlx)
+        const brightnessW = Math.pow(10, -0.4 * (skyBrightnessMag - 22.4775));
+        // Bewölkungsfaktor: 0.12 während der Dämmerung, sonst variabel
+        const cloudFactor = sunElevation >= -18 && sunElevation < 0 ? 0.12 : (0.25 + (0.3125 - 0.25) * (1 - moonFraction));
+        const brightnessB = brightnessW * cloudFactor;
+
+        return { brightnessW, brightnessB };
+    }
+
+    // Hilfsfunktion: Umrechnung von mag/arcsec² in cd/m²
+    function magToCdm2(mag) {
+        return Math.pow(10, -0.4 * (mag - 14.18));
+    }
+
+    // Hilfsfunktion: Umrechnung von cd/m² in mlx (angenommen: 1 cd/m² ≈ 1000 mlx)
+    function cdm2ToMlx(cdm2) {
+        return cdm2 * 1000;
+    }
+
+    // Hilfsfunktion: Kategorie basierend auf Helligkeit in mlx
+    function getBrightnessCategory(brightnessMlx) {
+        if (brightnessMlx >= 1000) return '';
+        else if (brightnessMlx >= 10) return 'B';
+        else if (brightnessMlx > 0.7) return '';
+        else if (brightnessMlx > 0.1) return 'D';
+        else return '';
+    }
+
+    // Debounce-Funktion, um wiederholte Aufrufe zu verhindern
+    // ... (andere Funktionen wie calculateSkyBrightness, renderNightCalcTable, etc.) ...
+
+    // Funktion calculateMonthlyNightBrightness
+    function calculateMonthlyNightBrightness() {
+        const lat = parseFloat(document.getElementById('nightCalcLatitude').value);
+        const lon = parseFloat(document.getElementById('nightCalcLongitude').value);
+        const yearMonth = document.getElementById('nightCalcMonthYear').value;
+        const utcToggle = document.getElementById('nightCalcUtcToggle').checked;
+        const errorDiv = document.getElementById('nightCalcError');
+
+        console.log(`calculateMonthlyNightBrightness aufgerufen mit: lat=${lat}, lon=${lon}, yearMonth=${yearMonth}, utc=${utcToggle}`);
+
+        // Validierung
+        if (isNaN(lat) || lat < -90 || lat > 90 || isNaN(lon) || lon < -180 || lon > 180 || !yearMonth) {
+            errorDiv.textContent = 'Bitte gib gültige Werte ein!';
+            console.error('Validierungsfehler:', { lat, lon, yearMonth });
+            return;
+        }
+        errorDiv.textContent = '';
+
+        const [year, month] = yearMonth.split('-').map(Number);
+        const daysInMonth = new Date(year, month, 0).getDate();
+
+        // Zeitformatierungsoptionen (für Konsolenausgabe)
+        const timeOptions = utcToggle
+            ? { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' }
+            : { hour: '2-digit', minute: '2-digit', hour12: false };
+
+        // Abgekürzter Monatsname
+        const monthNames = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+        const monthAbbr = monthNames[month - 1];
+
+        // Header erstellen (stündlich von 14:00 bis 07:00 lokale Zeit)
+        const localHours = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7];
+        const headers = [monthAbbr, ...localHours.map(hour => {
+            if (utcToggle) {
+                const utcHour = (hour - 2 + 24) % 24;
+                return `${utcHour} Z`;
+            } else {
+                return `${hour}`;
+            }
+        })];
+
+        // Daten für beide Tabellen
+        const valuesW = [];
+        const valuesB = [];
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const wRow = [`${day}`];
+            const bRow = [`${day}`];
+
+            for (let hour of localHours) {
+                const time = new Date(year, month - 1, day, hour + 2, 0, 0, 0);
+
+                const sunPos = SunCalc.getPosition(time, lat, lon);
+                const moonPos = SunCalc.getMoonPosition(time, lat, lon);
+                const moonIllum = SunCalc.getMoonIllumination(time);
+                const sunElevation = sunPos.altitude * 180 / Math.PI;
+
+                if (sunElevation < -6) {
+                    const { brightnessW, brightnessB } = calculateSkyBrightness(time, lat, lon, moonIllum, moonPos, sunPos);
+                    const wValue = brightnessW >= 0.1 && brightnessW < 1000 ? brightnessW.toFixed(1) : '*****';
+                    const bValue = brightnessB >= 0.1 && brightnessB < 1000 ? brightnessB.toFixed(1) : '*****';
+
+                    wRow.push(wValue);
+                    bRow.push(bValue);
+
+                    console.log(`Day ${day}, Hour ${hour}: SunElevation: ${sunElevation.toFixed(2)}, MoonElevation: ${(moonPos.altitude * 180 / Math.PI).toFixed(2)}, MoonFraction: ${moonIllum.fraction.toFixed(2)}, BrightnessW: ${brightnessW.toFixed(1)} mlx, BrightnessB: ${brightnessB.toFixed(1)} mlx, DisplayW: ${wValue}, DisplayB: ${bValue}, Time: ${time.toLocaleTimeString(utcToggle ? 'en-US' : 'de-DE', timeOptions)}`);
+                } else {
+                    wRow.push('*****');
+                    bRow.push('*****');
+                }
+            }
+
+            valuesW.push(wRow);
+            valuesB.push(bRow);
+        }
+
+        // Tabellen rendern
+        renderNightCalcTable('tableWCalc', headers, valuesW);
+        renderNightCalcTable('tableBCalc', headers, valuesB);
+    }
+
+    // Event-Listener für Nachthelligkeiten
+    const nightCalcLatitudeInput = document.getElementById('nightCalcLatitude');
+    const nightCalcLongitudeInput = document.getElementById('nightCalcLongitude');
+    const nightCalcMonthYearInput = document.getElementById('nightCalcMonthYear');
+    const nightCalcUtcToggle = document.getElementById('nightCalcUtcToggle');
+
+    if (nightCalcMonthYearInput) {
+        nightCalcMonthYearInput.addEventListener('change', function () {
+            console.log('NightCalc monthYear changed to:', this.value);
+            calculateMonthlyNightBrightness();
+            // Synchronisiere mit Monatstabelle
+            const monthYearInput = document.getElementById('monthYear');
+            if (!monthYearInput) {
+                console.warn('monthYearInput not found for synchronization');
+                return;
+            }
+            if (monthYearInput.value !== this.value) {
+                console.log('Synchronizing monthYear to:', this.value);
+                monthYearInput.value = this.value;
+                if (document.getElementById('monthTable').innerHTML) {
+                    console.log('Triggering calculateMonthTable');
+                    calculateMonthTable();
+                }
+            }
+        });
+    } else {
+        console.error('nightCalcMonthYearInput not found');
+    }
+
+    if (nightCalcLatitudeInput) {
+        nightCalcLatitudeInput.addEventListener('change', function () {
+            syncCoordinates(this);
+            if (document.getElementById('tableWCalc').innerHTML) {
+                calculateMonthlyNightBrightness();
+            }
+        });
+    } else {
+        console.error('nightCalcLatitudeInput not found');
+    }
+
+    if (nightCalcLongitudeInput) {
+        nightCalcLongitudeInput.addEventListener('change', function () {
+            syncCoordinates(this);
+            if (document.getElementById('tableWCalc').innerHTML) {
+                calculateMonthlyNightBrightness();
+            }
+        });
+    } else {
+        console.error('nightCalcLongitudeInput not found');
+    }
+
+    // Synchronisation für Monatstabelle
+    //const monthYearInput = document.getElementById('monthYear');
+    if (monthYearInput) {
+        monthYearInput.addEventListener('change', function () {
+            console.log('MonthTable monthYear changed to:', this.value);
+            if (document.getElementById('monthTable').innerHTML) {
+                calculateMonthTable();
+            }
+            // Synchronisiere mit Nachthelligkeiten
+            const nightCalcMonthYearInput = document.getElementById('nightCalcMonthYear');
+            if (!nightCalcMonthYearInput) {
+                console.warn('nightCalcMonthYearInput not found for synchronization');
+                return;
+            }
+            if (nightCalcMonthYearInput.value !== this.value) {
+                console.log('Synchronizing nightCalcMonthYear to:', this.value);
+                nightCalcMonthYearInput.value = this.value;
+                if (document.getElementById('tableWCalc').innerHTML) {
+                    console.log('Triggering calculateMonthlyNightBrightness');
+                    calculateMonthlyNightBrightness();
+                }
+            }
+        });
+    } else {
+        console.error('monthYearInput not found');
+    }
+
+    // Koordinatensynchronisation erweitern
+    nightCalcLatitudeInput.addEventListener('change', function () { syncCoordinates(this); });
+    nightCalcLongitudeInput.addEventListener('change', function () { syncCoordinates(this); });
+
+    // Datum beim Laden setzen
+    window.addEventListener('load', function () {
+        setCurrentDate();
+        document.getElementById('nightCalcDate').value = document.getElementById('dayDate').value;
+    });
+
+    // Rufe die Funktion beim Laden der Seite auf
+    window.addEventListener('load', function () {
+        console.log('Seite geladen - Initialisierung startet');
+        setCurrentDate();
+        document.getElementById('showSun').checked = true;  // Erzwinge Initialisierung
+        document.getElementById('showMoon').checked = true; // Erzwinge Initialisierung
+        calculateDayData(); // Initiales Rendern der Tagesdaten
+    });
+
+
+</script>
+</body>
+
+</html>

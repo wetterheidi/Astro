@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Schattenwurf-Berechnung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 800px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: right;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .input-section {
+            margin-bottom: 20px;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Schattenwurf</h1>
+    <label>Vorarbeit: Formular 3(Mond) oder Formular 2 (Sonne) für den gewünschten Zeitraum als Textdatei (*.txt) abspeichern.</label>
+    <div class="input-section">
+        <br>
+        <label for="height">Höhe des Gegenstands (in Metern): </label>
+        <input type="number" id="height" step="0.1" min="0" value="1">
+        <br>
+        <br>
+        <input type="file" id="fileInput" accept=".txt">
+        <div id="error" class="error"></div>
+    </div>
+    
+    <table id="resultTable">
+        <thead>
+            <tr>
+                <th>Zeit</th>
+                <th>Azimut (°)</th>
+                <th>Elevation (°)</th>
+                <th>Faktor</th>
+                <th>Schattenlänge (m)</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const heightInput = document.getElementById('height');
+        const tableBody = document.getElementById('tableBody');
+        const errorDiv = document.getElementById('error');
+
+        fileInput.addEventListener('change', processFile);
+        heightInput.addEventListener('input', () => {
+            if (fileInput.files.length) {
+                processFile();
+            }
+        });
+
+        function processFile() {
+            errorDiv.textContent = '';
+            
+            if (!fileInput.files.length) {
+                errorDiv.textContent = 'Bitte wähle eine Datei aus!';
+                tableBody.innerHTML = '';
+                return;
+            }
+
+            const height = parseFloat(heightInput.value);
+            if (isNaN(height) || height <= 0) {
+                errorDiv.textContent = 'Bitte gib eine gültige Höhe > 0 ein!';
+                tableBody.innerHTML = '';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                const dataArray = []; // Array zum Sammeln der Daten
+
+                // Überspringe die Kopfzeile
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+
+                    const [time1, az1, el1, time2, az2, el2] = line.split('\t');
+                    processData(time1, az1, el1, height, dataArray);
+                    if (time2) processData(time2, az2, el2, height, dataArray);
+                }
+
+                // Sortiere nach Zeit
+                dataArray.sort((a, b) => {
+                    const timeA = parseTime(a.time);
+                    const timeB = parseTime(b.time);
+                    return timeA - timeB;
+                });
+
+                // Tabelle füllen
+                tableBody.innerHTML = '';
+                dataArray.forEach(data => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${data.time}</td>
+                        <td>${data.azimuth.toFixed(1)}</td>
+                        <td>${data.elevation.toFixed(1)}</td>
+                        <td>${data.factor.toFixed(1)}</td>
+                        <td>${data.shadowLength.toFixed(1)}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            };
+
+            reader.onerror = function() {
+                errorDiv.textContent = 'Fehler beim Lesen der Datei!';
+                tableBody.innerHTML = '';
+            };
+
+            reader.readAsText(file);
+        }
+
+        function processData(time, azimuth, elevation, height, dataArray) {
+            elevation = parseFloat(elevation.replace(',', '.'));
+            azimuth = parseFloat(azimuth.replace(',', '.'));
+
+            if (elevation > 0) {
+                const elevationRad = elevation * Math.PI / 180;
+                const factor = 1 / Math.tan(elevationRad);
+                const shadowLength = height * factor;
+
+                // Datenobjekt zum Array hinzufügen
+                dataArray.push({
+                    time,
+                    azimuth,
+                    elevation,
+                    factor,
+                    shadowLength
+                });
+            }
+        }
+
+        // Hilfsfunktion zum Parsen der Zeit in Minuten für die Sortierung
+        function parseTime(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+    </script>
+</body>
+</html>

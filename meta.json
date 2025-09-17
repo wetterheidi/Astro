@@ -1,0 +1,46 @@
+{
+    "product_id": "WV03_20250407100000_P1BS_R3C1_0123456789ABCDEF",
+    "sensor": "WorldView-3",
+    "acquisition_date": "2025-04-07",
+    "acquisition_time": "10:00:00.000Z",
+    "footprint": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [11.000, 48.000],
+          [11.100, 48.050],
+          [11.150, 47.950],
+          [11.050, 47.900],
+          [11.000, 48.000]
+        ]
+      ]
+    },
+    "bounding_box": [47.900, 11.000, 48.050, 11.150],
+    "center_lat": 47.975,
+    "center_lon": 11.075,
+    "sun_azimuth": 135.78,
+    "sun_elevation": 52.34,
+    "off_nadir_angle": 12.5,
+    "cloud_cover": 5.2,
+    "processing_level": "Level-1B",
+    "pixel_resolution": 0.5,
+    "bands": [
+      "Coastal",
+      "Blue",
+      "Green",
+      "Yellow",
+      "Red",
+      "RedEdge",
+      "NIR1",
+      "NIR2"
+    ],
+    "radiometric_calibration_source": "Internal",
+    "geometric_correction_level": "Systematic",
+    "projection": "UTM",
+    "utm_zone": "32N",
+    "epsg_code": 32632,
+    "ground_control_points_used": 15,
+    "image_quality": 0.95,
+    "metadata_source": "Imagery Product File",
+    "metadata_generation_date": "2025-04-07T10:15:00.000Z"
+  }
