@@ -548,6 +548,12 @@
                         </thead>
                         <tbody id="sunMoonTableBody">
                             <tr class="sun-row">
+                                <td>Ende dunkle Nacht (Morgen)</td>
+                                <td id="nightEnd">N/A</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr class="sun-row">
                                 <td>Beginn bürgerliche Dämmerung (Morgen)</td>
                                 <td id="dawn">N/A</td>
                                 <td></td>
@@ -574,6 +580,12 @@
                             <tr class="sun-row">
                                 <td>Ende bürgerliche Dämmerung (Abend)</td>
                                 <td id="dusk">N/A</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr class="sun-row">
+                                <td>Beginn dunkle Nacht (Abend)</td>
+                                <td id="night">N/A</td>
                                 <td></td>
                                 <td></td>
                             </tr>
@@ -1187,7 +1199,9 @@
             { event: 'Mondaufgang', time: moonTimes.rise, display: moonTimes.rise ? moonTimes.rise.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions) : 'N/A', azimuth: '', elevation: '', class: 'moon-row' },
             { event: 'Höchststand Mond', time: moonNoon.time, display: moonNoon.time ? moonNoon.time.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions) : 'N/A', azimuth: moonNoon.azimuth ? moonNoon.azimuth.toFixed(1) : 'N/A', elevation: moonNoon.elevation ? moonNoon.elevation.toFixed(1) : 'N/A', class: 'moon-row' },
             { event: 'Monduntergang', time: moonTimes.set, display: moonTimes.set ? moonTimes.set.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions) : 'N/A', azimuth: '', elevation: '', class: 'moon-row' },
-            { event: 'Mondphase', time: null, display: `${getMoonPhaseName(moonIllumination.phase)} (${(moonIllumination.fraction * 100).toFixed(1)}% beleuchtet)`, azimuth: '', elevation: '', class: 'moon-row' }
+            { event: 'Mondphase', time: null, display: `${getMoonPhaseName(moonIllumination.phase)} (${(moonIllumination.fraction * 100).toFixed(1)}% beleuchtet)`, azimuth: '', elevation: '', class: 'moon-row' },
+            { event: 'Ende dunkle Nacht', time: sunTimes.nightEnd, display: sunTimes.nightEnd.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions), azimuth: '', elevation: '', class: 'sun-row' },
+            { event: 'Beginn dunkle Nacht', time: sunTimes.night, display: sunTimes.night.toLocaleTimeString(utcToggle.checked ? 'en-US' : 'de-DE', timeOptions), azimuth: '', elevation: '', class: 'sun-row' },
         ];
 
         renderTable();
@@ -1716,7 +1730,7 @@
         renderPolarChart(sunPositions, moonPositions, labels, timeOptions);
     }
 
-// Funktion zum Rendern des Polardiagramms
+    // Funktion zum Rendern des Polardiagramms
     function renderPolarChart(sunPositions, moonPositions, labels, timeOptions) {
         const ctx = polarChartCanvas.getContext('2d');
         ctx.clearRect(0, 0, polarChartCanvas.width, polarChartCanvas.height);
@@ -1790,7 +1804,7 @@
 
         if (showSun) drawPath(sunPositions, 'orange');
         if (showMoon) drawPath(moonPositions, 'yellow');
-        
+
         const labelPositions = [];
         const drawEventMarkers = (positions) => {
             positions.forEach(pos => {
@@ -1803,7 +1817,7 @@
                 const timeStr = pos.time.toLocaleTimeString(dayUtcToggle.checked ? 'en-US' : 'de-DE', timeOptions);
                 const day = pos.time.getDate().toString().padStart(2, '0'); const month = (pos.time.getMonth() + 1).toString().padStart(2, '0');
                 const dateStr = `${day}.${month}.`; const dateTimeStr = `${dateStr} ${timeStr}`;
-                let labelX = centerX + (maxRadius + 70) * Math.sin(angleRad); 
+                let labelX = centerX + (maxRadius + 70) * Math.sin(angleRad);
                 let labelY = centerY - (maxRadius + 70) * Math.cos(angleRad);
                 let offsetY = 0; let offsetX = 0;
                 labelPositions.forEach(p => {
@@ -1831,7 +1845,7 @@
         // Der fehlerhafte "Lückenfüller" wurde entfernt. Er wird nicht mehr benötigt.
 
         ctx.font = '12px Arial'; ctx.textAlign = 'left';
-        let legendY = centerY + maxRadius + 50; 
+        let legendY = centerY + maxRadius + 50;
         if (showSun) {
             ctx.fillStyle = 'orange'; ctx.fillRect(centerX - 50, legendY - 5, 20, 10);
             ctx.fillStyle = '#000'; ctx.fillText('Sonne', centerX - 25, legendY);
