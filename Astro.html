@@ -1440,109 +1440,69 @@
 
     // Übersetzung Ihrer Funktion "UTMREFinUTM"
     function vb_UTMREFinUTM(UTMREF) {
-        const utm = { box: "", easting: "", northing: "" };
-        UTMREF = UTMREF.toUpperCase().replace(/\s+/g, ' '); // Stellt sicher, dass Leerzeichen konsistent sind
-        const utmRefTeile = UTMREF.split(" ");
+        // 1. Eingabe normalisieren (Großbuchstaben, Leerzeichen konsolidieren)
+        const utmRefTeile = UTMREF.toUpperCase().trim().split(/\s+/);
+        if (utmRefTeile.length < 4) throw new Error("Ungültiges MGRS-Format. 4 Teile erwartet.");
 
-        if (utmRefTeile.length < 4) throw new Error("Invalid MGRS format. Expected 4 parts.");
+        const zoneStr = utmRefTeile[0]; // z.B. "32U"
+        const gridSq = utmRefTeile[1];  // z.B. "PU"
+        const eastingStr = utmRefTeile[2];
+        const northingStr = utmRefTeile[3];
 
-        const ew2 = utmRefTeile[2];
-        const nw2 = utmRefTeile[3];
+        const zone = parseInt(zoneStr.substring(0, zoneStr.length - 1), 10);
+        const band = zoneStr.slice(-1);
 
-        const m_east_0 = "STUVWXYZ";
-        const m_east_1 = "ABCDEFGH";
-        const m_east_2 = "JKLMNPQR";
-        const m_north_0 = "FGHJKLMNPQRSTUVABCDE";
-        const m_north_1 = "ABCDEFGHJKLMNPQRSTUV";
+        const digraph1 = gridSq.charAt(0); // 'P'
+        const digraph2 = gridSq.charAt(1); // 'U'
 
-        const zoneNumberStr = utmRefTeile[0].substring(0, utmRefTeile[0].length - 1);
-        const zoneNumber = parseInt(zoneNumberStr, 10);
-        const band = utmRefTeile[0].slice(-1);
-        const r_east = utmRefTeile[1].substring(0, 1);
-        const r_north = utmRefTeile[1].substring(1, 2);
+        // 2. Ostwert (Easting) berechnen
+        // Die Buchstaben für die 100km-Quadrate wiederholen sich alle 3 Zonen
+        const e_letters_set1 = "ABCDEFGH"; // für Zonen 1, 4, 7, ...
+        const e_letters_set2 = "JKLMNPQR"; // für Zonen 2, 5, 8, ...
+        const e_letters_set3 = "STUVWXYZ"; // für Zonen 3, 6, 9, ...
 
-        let m_ce = "";
-        const i_east = zoneNumber % 3;
-        if (i_east === 0) {
-            m_ce = (m_east_0.indexOf(r_east) + 1).toString();
-        } else if (i_east === 1) {
-            m_ce = (m_east_1.indexOf(r_east) + 1).toString();
-        } else if (i_east === 2) {
-            m_ce = (m_east_2.indexOf(r_east) + 1).toString();
+        const set = (zone - 1) % 3;
+        let e_letters;
+        if (set === 0) e_letters = e_letters_set1;
+        else if (set === 1) e_letters = e_letters_set2;
+        else e_letters = e_letters_set3;
+
+        const easting100k = (e_letters.indexOf(digraph1) + 1) * 100000;
+        const accuracy = Math.pow(10, 5 - eastingStr.length);
+        const easting = easting100k + (parseInt(eastingStr, 10) * accuracy);
+
+        // 3. Nordwert (Northing) berechnen
+        // Die Buchstaben für die 100km-Quadrate sind für gerade und ungerade Zonen unterschiedlich
+        const n_letters_odd = "ABCDEFGHJKLMNPQRSTUV"; // für ungerade Zonen
+        const n_letters_even = "FGHJKLMNPQRSTUVABCDE"; // für gerade Zonen
+
+        let n_letters = (zone % 2 === 0) ? n_letters_even : n_letters_odd;
+        const northing100k = n_letters.indexOf(digraph2) * 100000;
+        let northing_raw = northing100k + (parseInt(northingStr, 10) * accuracy);
+
+        // Dies ist der entscheidende Teil: Korrektur des 2.000.000m-Offsets
+        // Lookup für den minimalen Nordwert eines Breitengradbandes
+        const falseNorthingOffsets = {
+            'C': 1100000, 'D': 2000000, 'E': 2800000, 'F': 3700000, 'G': 4600000, 'H': 5500000,
+            'J': 6400000, 'K': 7300000, 'L': 8200000, 'M': 9100000, 'N': 0, 'P': 800000,
+            'Q': 1700000, 'R': 2600000, 'S': 3500000, 'T': 4400000, 'U': 5300000, 'V': 6200000,
+            'W': 7000000, 'X': 7900000
+        };
+
+        const minNorthing = falseNorthingOffsets[band] || 0;
+
+        // Addiere 2.000.000m, bis der berechnete Nordwert im richtigen Bereich
+        // für das gegebene Breitengradband liegt.
+        while (northing_raw < minNorthing) {
+            northing_raw += 2000000;
         }
 
-        const ew = m_ce + ew2;
-
-        let m_cn_str = "";
-        const i_north = zoneNumber % 2;
-        if (i_north === 0) { // Gerade Zonennummer
-            m_cn_str = m_north_0.indexOf(r_north).toString();
-        } else { // Ungerade Zonennummer
-            m_cn_str = m_north_1.indexOf(r_north).toString();
-        }
-
-        let m_cn = parseInt(m_cn_str, 10);
-
-        // =========================================================================
-        // FINAL KORRIGIERTER UND ERWEITERTER BLOCK
-        // =========================================================================
-        if (band >= "N") { // Nördliche Hemisphäre
-            if (band === 'X') {
-                // Band X (84N-90N) liegt vollständig im höchsten Northing-Block (+8,000,000m)
-                m_cn += 80;
-            } else if (band === 'W' || band === 'V') {
-                // Band W wird wie Band V behandelt, um den spezifischen Anwendungsfall zu lösen.
-                // Diese komplexe Regel wendet je nach Northing-Buchstabe unterschiedliche Offsets an.
-                if (m_cn < 8) m_cn += 80; else if (m_cn < 28) m_cn += 60; else if (m_cn < 48) m_cn += 40; else if (m_cn < 68) m_cn += 20;
-            } else if (band === "U") {
-                if (m_cn < 48) m_cn += 60; else if (m_cn < 68) m_cn += 40;
-            } else if (band === "T") {
-                if (m_cn < 28) m_cn += 40; else if (m_cn < 48) m_cn += 20;
-            } else if (band === "S") {
-                if (m_cn < 8) m_cn += 40; else if (m_cn < 28) m_cn += 20;
-            } else if (band === "R") {
-                if (m_cn < 68) m_cn += 20;
-            } else if (band === "Q") {
-                if (m_cn < 48) m_cn += 20;
-            } else if (band === "P") {
-                if (m_cn < 28) m_cn += 20;
-            }
-        } else { // Südliche Hemisphäre
-            if (band === "M") {
-                if (m_cn < 88) m_cn += 100; else m_cn += 80;
-            } else if (band === "L") {
-                if (m_cn < 68) m_cn += 80; else m_cn += 60;
-            } else if (band === "K") {
-                if (m_cn < 48) m_cn += 80; else if (m_cn < 68) m_cn += 60;
-            } else if (band === "J") {
-                if (m_cn < 28) m_cn += 80; else if (m_cn < 48) m_cn += 60;
-            } else if (band === "H") {
-                if (m_cn < 8) m_cn += 80; else if (m_cn < 28) m_cn += 60; else m_cn += 40;
-            } else if (band === "G") {
-                if (m_cn < 68) m_cn += 60; else m_cn += 40;
-            } else if (band === "F") {
-                if (m_cn < 48) m_cn += 60; else if (m_cn < 68) m_cn += 40;
-            } else if (band === "E") {
-                if (m_cn < 28) m_cn += 60; else if (m_cn < 48) m_cn += 40;
-            } else if (band === "D") {
-                if (m_cn < 8) m_cn += 60; else if (m_cn < 28) m_cn += 40; else m_cn += 20;
-            } else if (band === "C") {
-                if (m_cn < 68) m_cn += 40; else m_cn += 20;
-            }
-        }
-        // =========================================================================
-        // ENDE DES BLOCKS
-        // =========================================================================
-
-        m_cn_str = m_cn.toString();
-        let nw_prefix = m_cn_str.length === 1 ? "0" + m_cn_str : m_cn_str;
-        if (nw_prefix.length > 2) nw_prefix = nw_prefix.substring(nw_prefix.length - 2);
-        let nw = nw_prefix + nw2;
-
-        utm.box = utmRefTeile[0];
-        utm.northing = parseFloat(nw);
-        utm.easting = parseFloat(ew);
-        return utm;
+        // 4. Korrekte Werte zurückgeben
+        return {
+            box: zoneStr,
+            easting: easting,
+            northing: northing_raw
+        };
     }
 
     // Übersetzung Ihrer Funktion "UTMinDezimal"
