@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/wetterheidi/Documents/Git/**)",
+      "Bash(chmod +x /Users/wetterheidi/Documents/Git/Astro/deploy/setup-server.sh /Users/wetterheidi/Documents/Git/Astro/deploy/update.sh)"
+    ]
+  }
+}
