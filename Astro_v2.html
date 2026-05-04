@@ -41,8 +41,10 @@
             --nvg-restricted: rgba(251, 191,  36, 0.15);
             --nvg-dark:       rgba(239,  68,  68, 0.25);
 
-            --sun-tint:  rgba(251, 191,  36, 0.10);
-            --moon-tint: rgba(147, 167, 210, 0.08);
+            --sun-tint:   rgba(251, 191,  36, 0.14);
+            --moon-tint:  rgba(147, 167, 210, 0.13);
+            --sun-stripe: rgba(251, 191,  36, 0.60);
+            --moon-stripe:rgba(147, 167, 210, 0.55);
 
             --mono:   'IBM Plex Mono', monospace;
             --sans:   'IBM Plex Sans', sans-serif;
@@ -73,8 +75,10 @@
             --nvg-restricted: #ffe08a;
             --nvg-dark:       #ffcccc;
 
-            --sun-tint:  #fffde0;
-            --moon-tint: #eef0f5;
+            --sun-tint:   #fff8cc;
+            --moon-tint:  #dde5f5;
+            --sun-stripe: #c89600;
+            --moon-stripe:#5878b0;
         }
 
         /* Tag-Mode: Tabs sitzen auf weißem Hintergrund */
@@ -482,8 +486,13 @@
             word-break: break-word; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word;
         }
 
-        .sun-row     { background: var(--sun-tint); }
-        .moon-row    { background: var(--moon-tint); }
+        .sun-row   { background: var(--sun-tint); }
+        .moon-row  { background: var(--moon-tint); }
+
+        /* Linker Akzentstreifen für Sonne/Mond-Zeilen */
+        .sun-row  td:first-child { box-shadow: inset 3px 0 0 var(--sun-stripe); }
+        .moon-row td:first-child { box-shadow: inset 3px 0 0 var(--moon-stripe); }
+
         .combined-sun  { background: var(--sun-tint); }
         .combined-moon { background: var(--moon-tint); }
         .sun-header    { background: var(--sun-tint); }
@@ -1546,7 +1555,7 @@
         const lat = parseFloat(latitudeInput.value);
         const lon = parseFloat(longitudeInput.value);
         const dateParts = dateInput.value.split('-').map(Number);
-        const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+        const date = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]));
 
         if (isNaN(lat) || lat < -90 || lat > 90) { sunMoonErrorDiv.textContent = 'Bitte gib einen gültigen Breitengrad zwischen -90 und 90 ein!'; return; }
         if (isNaN(lon) || lon < -180 || lon > 180) { sunMoonErrorDiv.textContent = 'Bitte gib einen gültigen Längengrad zwischen -180 und 180 ein!'; return; }
@@ -1597,8 +1606,7 @@
 
     // Funktion zum Finden des Mond-Höchststands
     function findMoonNoon(date, lat, lon) {
-        const startTime = new Date(date);
-        startTime.setHours(0, 0, 0, 0); // Start um Mitternacht
+        const startTime = new Date(date.getTime()); // UTC midnight — don't use setHours (would shift to local midnight)
 
         let maxElevation = -Infinity;
         let moonNoonTime = null;
