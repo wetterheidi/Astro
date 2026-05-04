@@ -559,8 +559,36 @@
         }
 
         /* ------------------------------------------------------------------ */
-        /* Nachthelligkeiten: Copy-Buttons hover-only                          */
+        /* Nachthelligkeiten: Checkbox-Selektion & Copy-Buttons               */
         /* ------------------------------------------------------------------ */
+        .night-table .check-col {
+            width: 26px;
+            min-width: 26px;
+            padding: 2px 4px;
+            text-align: center;
+        }
+
+        .night-table .check-col input[type="checkbox"] {
+            opacity: 0;
+            cursor: pointer;
+            width: 13px;
+            height: 13px;
+            transition: opacity 0.15s;
+            pointer-events: none;
+        }
+
+        .night-table tr:hover .check-col input[type="checkbox"],
+        .night-table tr.row-selected .check-col input[type="checkbox"],
+        .night-table thead .check-col input[type="checkbox"] {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .night-table tr.row-selected td {
+            outline: 1px solid var(--accent2);
+            outline-offset: -1px;
+        }
+
         .night-table .action-col {
             width: 52px;
             min-width: 52px;
@@ -581,6 +609,29 @@
         .night-table tr:hover .action-col button {
             opacity: 1;
             pointer-events: auto;
+        }
+
+        /* Aktionsleiste für Mehrfachselektion */
+        .selection-bar {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            margin: 6px 0 14px;
+            background: var(--bg3);
+            border: 1px solid var(--accent2);
+            border-radius: var(--radius);
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text2);
+        }
+
+        .selection-bar.visible { display: flex; }
+
+        .selection-bar .sel-count {
+            color: var(--accent);
+            font-weight: 500;
+            margin-right: 4px;
         }
 
         /* ------------------------------------------------------------------ */
@@ -1034,8 +1085,10 @@
         </div>
         <h2>Tabelle wolkenlos</h2>
         <div class="table-scroll-wrapper"><table id="tableWCalc" class="night-table"></table></div>
+        <div id="selbar-tableWCalc" class="selection-bar"></div>
         <h2>Tabelle bewölkt</h2>
         <div class="table-scroll-wrapper"><table id="tableBCalc" class="night-table"></table></div>
+        <div id="selbar-tableBCalc" class="selection-bar"></div>
         <div id="nightCalcResults"></div>
         <div id="nightCalcError" class="error"></div>
 
@@ -2468,16 +2521,31 @@
         const table = document.getElementById(tableId);
         if (!table) return;
 
-        // Fügen Sie den "Aktion"-Header zur Header-Liste hinzu, falls nicht vorhanden
-        if (headers[headers.length - 1] !== 'Aktion') {
-            headers.push('Aktion');
-        }
+        if (headers[headers.length - 1] !== 'Aktion') headers.push('Aktion');
 
         const displayMode = document.getElementById('displayMode')?.value || 'numbers';
         table.innerHTML = '';
 
+        // Header
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
+
+        // Checkbox "alle auswählen"
+        const thCheck = document.createElement('th');
+        thCheck.className = 'check-col';
+        const selectAllCb = document.createElement('input');
+        selectAllCb.type = 'checkbox';
+        selectAllCb.title = 'Alle markieren / abwählen';
+        selectAllCb.addEventListener('change', function () {
+            table.querySelectorAll('tbody .check-col input').forEach(cb => {
+                cb.checked = this.checked;
+                cb.closest('tr').classList.toggle('row-selected', this.checked);
+            });
+            updateSelectionBar(tableId);
+        });
+        thCheck.appendChild(selectAllCb);
+        headerRow.appendChild(thCheck);
+
         headers.forEach(header => {
             const th = document.createElement('th');
             th.textContent = header;
@@ -2486,21 +2554,37 @@
         thead.appendChild(headerRow);
         table.appendChild(thead);
 
+        // Zeilen
         const tbody = document.createElement('tbody');
         values.forEach(row => {
             const tr = document.createElement('tr');
+
+            // Checkbox-Zelle
+            const checkTd = document.createElement('td');
+            checkTd.className = 'check-col';
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.addEventListener('change', function () {
+                tr.classList.toggle('row-selected', this.checked);
+                // Select-all-Checkbox aktualisieren
+                const allCbs = [...table.querySelectorAll('tbody .check-col input')];
+                const selectAll = table.querySelector('thead .check-col input');
+                if (selectAll) selectAll.checked = allCbs.every(c => c.checked);
+                updateSelectionBar(tableId);
+            });
+            checkTd.appendChild(cb);
+            tr.appendChild(checkTd);
+
+            // Datenzellen
             row.forEach((val, index) => {
                 const td = document.createElement('td');
                 if (index === 0) {
                     td.textContent = val;
                 } else if (val === '*****') {
                     td.textContent = '';
-                    td.style.backgroundColor = 'white';
                 } else {
                     const num = parseFloat(val);
-                    if (displayMode === 'numbers') {
-                        td.textContent = num.toFixed(1);
-                    }
+                    if (displayMode === 'numbers') td.textContent = num.toFixed(1);
                     if (num >= 10 && num < 1000) {
                         if (displayMode === 'conclusion') td.textContent = 'B';
                         td.classList.add('big-value');
@@ -2518,6 +2602,7 @@
                 tr.appendChild(td);
             });
 
+            // Aktions-Zelle (Einzel-Kopieren)
             const actionTd = document.createElement('td');
             actionTd.className = 'action-col';
 
@@ -2534,10 +2619,176 @@
             actionTd.appendChild(copyImageButton);
 
             tr.appendChild(actionTd);
-
             tbody.appendChild(tr);
         });
         table.appendChild(tbody);
+
+        // Aktionsleiste zurücksetzen
+        updateSelectionBar(tableId);
+    }
+
+    // ------------------------------------------------------------------ //
+    // Mehrfachselektion: Aktionsleiste                                    //
+    // ------------------------------------------------------------------ //
+    function updateSelectionBar(tableId) {
+        const table = document.getElementById(tableId);
+        const bar = document.getElementById('selbar-' + tableId);
+        if (!bar || !table) return;
+
+        const checked = table.querySelectorAll('tbody tr.row-selected');
+        const count = checked.length;
+
+        bar.innerHTML = '';
+        if (count === 0) { bar.classList.remove('visible'); return; }
+
+        bar.classList.add('visible');
+
+        const label = document.createElement('span');
+        label.className = 'sel-count';
+        label.textContent = `${count} Zeile${count > 1 ? 'n' : ''} markiert`;
+        bar.appendChild(label);
+
+        const btnText = document.createElement('button');
+        btnText.textContent = '📋 Als Text kopieren';
+        btnText.onclick = () => copySelectedRowsAsText(tableId);
+        bar.appendChild(btnText);
+
+        const btnImg = document.createElement('button');
+        btnImg.textContent = '📸 Als Bild kopieren';
+        btnImg.onclick = () => copySelectedRowsAsImage(tableId);
+        bar.appendChild(btnImg);
+
+        const btnClear = document.createElement('button');
+        btnClear.textContent = '✕ Auswahl aufheben';
+        btnClear.onclick = () => {
+            table.querySelectorAll('tbody .check-col input').forEach(cb => {
+                cb.checked = false;
+                cb.closest('tr').classList.remove('row-selected');
+            });
+            const selectAll = table.querySelector('thead .check-col input');
+            if (selectAll) selectAll.checked = false;
+            updateSelectionBar(tableId);
+        };
+        bar.appendChild(btnClear);
+    }
+
+    function copySelectedRowsAsText(tableId) {
+        const table = document.getElementById(tableId);
+        const selectedRows = table.querySelectorAll('tbody tr.row-selected');
+        if (selectedRows.length === 0) return;
+
+        const NVG_COLORS = { 'big-value': '#ffff99', 'mid-value': '#ccffcc', 'low-value': '#ffe08a', 'tiny-value': '#ffcccc' };
+
+        // Header ohne Hilfs- und Aktionsspalten
+        const headerCells = [...table.querySelector('thead tr').cells]
+            .filter(c => !c.classList.contains('check-col') && !c.classList.contains('action-col'));
+
+        const tbl = document.createElement('table');
+        tbl.style.borderCollapse = 'collapse';
+        const thead = document.createElement('thead');
+        const htr = document.createElement('tr');
+        headerCells.forEach(cell => {
+            const th = document.createElement('th');
+            th.textContent = cell.textContent;
+            th.style.cssText = 'background:#f2f2f2;border:1px solid black;padding:4px 8px;font-family:Calibri,Arial,sans-serif;';
+            htr.appendChild(th);
+        });
+        thead.appendChild(htr);
+        tbl.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        selectedRows.forEach(row => {
+            const tr = document.createElement('tr');
+            [...row.cells]
+                .filter(c => !c.classList.contains('check-col') && !c.classList.contains('action-col'))
+                .forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell.textContent;
+                    let bg = '#ffffff';
+                    for (const [cls, color] of Object.entries(NVG_COLORS)) {
+                        if (cell.classList.contains(cls)) { bg = color; break; }
+                    }
+                    td.style.cssText = `background:${bg};color:#000;text-align:center;font-family:Calibri,Arial,sans-serif;border:1px solid black;padding:4px 8px;`;
+                    tr.appendChild(td);
+                });
+            tbody.appendChild(tr);
+        });
+        tbl.appendChild(tbody);
+
+        const type = 'text/html';
+        try {
+            navigator.clipboard.write([new ClipboardItem({
+                [type]: new Promise(resolve => resolve(new Blob([tbl.outerHTML], { type })))
+            })]).then(() => {
+                const bar = document.getElementById('selbar-' + tableId);
+                const btn = bar?.querySelector('button');
+                if (btn) { const t = btn.textContent; btn.textContent = '✅ Kopiert!'; setTimeout(() => btn.textContent = t, 1500); }
+            });
+        } catch (err) { alert('Kopieren fehlgeschlagen: ' + err.message); }
+    }
+
+    async function copySelectedRowsAsImage(tableId) {
+        const table = document.getElementById(tableId);
+        const selectedRows = [...table.querySelectorAll('tbody tr.row-selected')];
+        if (selectedRows.length === 0) return;
+
+        const bar = document.getElementById('selbar-' + tableId);
+        const btnImg = bar?.querySelectorAll('button')[1];
+        const originalText = btnImg?.textContent;
+        if (btnImg) { btnImg.textContent = '⏳...'; btnImg.disabled = true; }
+
+        const NVG_COLORS = { 'big-value': '#ffff99', 'mid-value': '#ccffcc', 'low-value': '#ffe08a', 'tiny-value': '#ffcccc' };
+
+        const tempTable = document.createElement('table');
+        tempTable.className = table.className;
+        tempTable.style.cssText = `background:#fff;position:absolute;left:-9999px;top:0;width:${table.offsetWidth}px;border-collapse:collapse;`;
+
+        // Header klonen ohne Hilfs-/Aktionsspalten
+        const theadClone = table.querySelector('thead').cloneNode(true);
+        [...theadClone.querySelector('tr').cells].forEach(cell => {
+            if (cell.classList.contains('check-col') || cell.classList.contains('action-col'))
+                theadClone.querySelector('tr').removeChild(cell);
+        });
+        tempTable.appendChild(theadClone);
+
+        // Ausgewählte Zeilen klonen und druckgerecht einfärben
+        const tbody = document.createElement('tbody');
+        selectedRows.forEach(row => {
+            const rowClone = row.cloneNode(true);
+            [...rowClone.cells].forEach((cell, i) => {
+                if (cell.classList.contains('check-col') || cell.classList.contains('action-col')) {
+                    rowClone.removeChild(cell); return;
+                }
+                let bg = '#ffffff';
+                const orig = [...row.cells].filter(c => !c.classList.contains('check-col') && !c.classList.contains('action-col'))[i];
+                if (orig) {
+                    for (const [cls, color] of Object.entries(NVG_COLORS)) {
+                        if (orig.classList.contains(cls)) { bg = color; break; }
+                    }
+                }
+                cell.style.cssText = `background:${bg};color:#000;text-align:center;font-family:Calibri,Arial,sans-serif;border:1px solid #999;padding:4px 6px;`;
+            });
+            tbody.appendChild(rowClone);
+        });
+        tempTable.appendChild(tbody);
+        document.body.appendChild(tempTable);
+
+        try {
+            await navigator.clipboard.write([new ClipboardItem({
+                'image/png': new Promise(async (resolve, reject) => {
+                    try {
+                        const canvas = await html2canvas(tempTable, { backgroundColor: '#ffffff', logging: false });
+                        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Canvas leer')), 'image/png');
+                    } catch (e) { reject(e); }
+                    finally { if (document.body.contains(tempTable)) document.body.removeChild(tempTable); }
+                })
+            })]);
+            if (btnImg) { btnImg.textContent = '✅'; setTimeout(() => { btnImg.textContent = originalText; btnImg.disabled = false; }, 2000); }
+        } catch (err) {
+            if (document.body.contains(tempTable)) document.body.removeChild(tempTable);
+            if (btnImg) { btnImg.textContent = '❌'; setTimeout(() => { btnImg.textContent = originalText; btnImg.disabled = false; }, 2000); }
+            alert('Fehler: ' + err.message);
+        }
     }
 
     // NEUE FUNKTION: Zeichnet und aktualisiert das Diagramm
@@ -2622,14 +2873,14 @@
     }
 
     function copyRowForPowerPoint(tableRow) {
-        // 1. Klonen
         const rowClone = tableRow.cloneNode(true);
 
-        // 2. Button entfernen
-        // Wir prüfen sicherheitshalber, ob ein Child existiert
-        if (rowClone.lastChild) rowClone.removeChild(rowClone.lastChild);
+        // Hilfs- und Aktionsspalten entfernen
+        [...rowClone.cells].forEach(cell => {
+            if (cell.classList.contains('check-col') || cell.classList.contains('action-col'))
+                rowClone.removeChild(cell);
+        });
 
-        // 3. Styles anwenden
         Array.from(rowClone.cells).forEach(cell => {
             let bgColor = '#ffffff';
             if (cell.classList.contains('big-value')) bgColor = '#ffff99';
@@ -2766,15 +3017,20 @@
         // Breite erzwingen, damit es nicht zusammenquetscht
         tempTable.style.width = parentTable.offsetWidth + 'px';
 
-        // 3. Header klonen (damit man weiß, was die Werte bedeuten)
+        // Header klonen — Hilfs- und Aktionsspalten entfernen
         const theadClone = parentTable.querySelector('thead').cloneNode(true);
-        // Action Spalte aus Header entfernen
         const headerRow = theadClone.querySelector('tr');
-        if (headerRow && headerRow.lastChild) headerRow.removeChild(headerRow.lastChild);
+        [...headerRow.cells].forEach(cell => {
+            if (cell.classList.contains('check-col') || cell.classList.contains('action-col'))
+                headerRow.removeChild(cell);
+        });
 
-        // 4. Zeile klonen
+        // Zeile klonen — Hilfs- und Aktionsspalten entfernen
         const rowClone = tableRow.cloneNode(true);
-        if (rowClone.lastChild) rowClone.removeChild(rowClone.lastChild); // Buttons weg
+        [...rowClone.cells].forEach(cell => {
+            if (cell.classList.contains('check-col') || cell.classList.contains('action-col'))
+                rowClone.removeChild(cell);
+        });
 
         // 5. Zusammenbauen
         const tbody = document.createElement('tbody');
