@@ -635,6 +635,80 @@
         }
 
         /* ------------------------------------------------------------------ */
+        /* Favoriten-Panel                                                      */
+        /* ------------------------------------------------------------------ */
+        .fav-panel {
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-family: var(--mono);
+            font-size: 11px;
+        }
+
+        .fav-label {
+            color: var(--text3);
+            white-space: nowrap;
+        }
+
+        .fav-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg3);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            padding: 3px 10px 3px 10px;
+            color: var(--text2);
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            font-family: var(--mono);
+            font-size: 11px;
+        }
+
+        .fav-chip:hover { background: var(--border2); color: var(--text); }
+
+        .fav-chip .fav-del {
+            opacity: 0;
+            margin-left: 2px;
+            color: #f87171;
+            font-size: 12px;
+            line-height: 1;
+            transition: opacity 0.15s;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            font-family: inherit;
+        }
+
+        .fav-chip:hover .fav-del { opacity: 1; }
+
+        .fav-save-area {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .fav-save-area input {
+            font-family: var(--mono);
+            font-size: 11px;
+            background: var(--bg3);
+            color: var(--text);
+            border: 1px solid var(--border2);
+            border-radius: var(--radius);
+            padding: 3px 8px;
+            width: 130px;
+            outline: none;
+        }
+
+        .fav-save-area input:focus { border-color: var(--accent2); }
+
+        /* ------------------------------------------------------------------ */
         /* Responsive                                                           */
         /* ------------------------------------------------------------------ */
         @media (max-width: 768px) {
@@ -673,6 +747,15 @@
             title="Erfordert Internetzugang">&#x1F310; Tagesdaten</button>
         <button class="tablinks internet" onclick="openTab(event, 'NightCalc')"
             title="Erfordert Internetzugang">&#x1F310; Nachthelligkeiten (Berechnet)</button>
+    </div>
+
+    <div class="fav-panel" id="favPanel">
+        <span class="fav-label">&#x2605; Orte:</span>
+        <span id="favChips"></span>
+        <div class="fav-save-area">
+            <input type="text" id="favNameInput" placeholder="Ortsname …" maxlength="24">
+            <button onclick="saveFavorite()" title="Aktuellen Ort speichern">+ Speichern</button>
+        </div>
     </div>
 
     <div id="Night" class="tabcontent">
@@ -782,7 +865,7 @@
             <div class="input-row">
                 <label for="timezoneOffset">UTC-Offset:</label>
                 <input type="number" id="timezoneOffset" step="0.5" style="width: 70px;">
-                <button onclick="fetchTimezone()" title="Holt den Offset automatisch von Open-Meteo">&#x1F30D; Auto-Offset</button>
+                <button onclick="fetchTimezone(this)" title="Holt den Offset automatisch von Open-Meteo">&#x1F30D; Auto-Offset</button>
                 <label for="date">Datum:</label>
                 <input type="date" id="date" value="2025-04-07">
             </div>
@@ -932,7 +1015,7 @@
             <div class="input-row">
                 <label for="monthTimezoneOffset">UTC-Offset:</label>
                 <input type="number" id="monthTimezoneOffset" step="0.5" style="width: 70px;">
-                <button onclick="fetchTimezone()" title="Holt den Offset automatisch von Open-Meteo">&#x1F30D; Auto-Offset</button>
+                <button onclick="fetchTimezone(this)" title="Holt den Offset automatisch von Open-Meteo">&#x1F30D; Auto-Offset</button>
                 <label for="monthYear">Monat/Jahr:</label>
                 <input type="month" id="monthYear" value="2025-02">
             </div>
@@ -982,7 +1065,7 @@
             <div class="input-row">
                 <label for="dayTimezoneOffset">UTC-Offset:</label>
                 <input type="number" id="dayTimezoneOffset" step="0.5" style="width: 70px;">
-                <button onclick="fetchTimezone()" title="Holt den Offset automatisch von Open-Meteo">&#x1F30D; Auto-Offset</button>
+                <button onclick="fetchTimezone(this)" title="Holt den Offset automatisch von Open-Meteo">&#x1F30D; Auto-Offset</button>
                 <label for="dayDate">Startdatum:</label>
                 <input type="date" id="dayDate" value="2025-04-07">
                 <label for="startTime">Startuhrzeit (loc):</label>
@@ -1053,7 +1136,7 @@
             <div class="input-row">
                 <label for="nightCalcTimezoneOffset">UTC-Offset:</label>
                 <input type="number" id="nightCalcTimezoneOffset" step="0.5" style="width: 70px;">
-                <button onclick="fetchTimezone()" title="Holt den Offset automatisch von Open-Meteo">&#x1F30D; Auto-Offset</button>
+                <button onclick="fetchTimezone(this)" title="Holt den Offset automatisch von Open-Meteo">&#x1F30D; Auto-Offset</button>
                 <label for="nightCalcMonthYear">Monat/Jahr:</label>
                 <input type="month" id="nightCalcMonthYear" value="2025-04">
             </div>
@@ -1140,10 +1223,18 @@
         }
         document.getElementById(tabName).classList.add("active");
         evt.currentTarget.classList.add("active");
+        try { localStorage.setItem('astro_lastTab', tabName); } catch(e) {}
     }
 
-    // Standard-Tab öffnen
-    document.getElementById("defaultOpen").click();
+    // Letzten Tab wiederherstellen oder Standard öffnen
+    (function restoreLastTab() {
+        const lastTab = localStorage.getItem('astro_lastTab');
+        if (lastTab && document.getElementById(lastTab)) {
+            const btn = document.querySelector(`.tablinks[onclick*="'${lastTab}'"]`);
+            if (btn) { btn.click(); return; }
+        }
+        document.getElementById("defaultOpen").click();
+    })();
 
     // Nachthelligkeiten Logik
     const nightFileInput = document.getElementById('nightFileInput');
@@ -2929,29 +3020,22 @@
         }
     }
 
-    async function fetchTimezone() {
-        // 1. Koordinaten auslesen
+    async function fetchTimezone(triggerBtn = null) {
         const lat = document.getElementById('latitude').value;
         const lon = document.getElementById('longitude').value;
         const offsetInput = document.getElementById('timezoneOffset');
 
         if (!lat || !lon) {
-            alert("Bitte erst Breitengrad und Längengrad eingeben.");
+            if (triggerBtn) alert("Bitte erst Breitengrad und Längengrad eingeben.");
             return;
         }
 
-        // 2. Open-Meteo API URL bauen
-        // Wir fragen 'timezone=auto' an, die API berechnet anhand der Koordinaten den Offset
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`;
+        const originalText = triggerBtn ? triggerBtn.textContent : null;
 
         try {
-            // Button Feedback geben
-            const btn = event.target; // Der geklickte Button
-            const originalText = btn.textContent;
-            btn.textContent = "Lade...";
-            btn.disabled = true;
+            if (triggerBtn) { triggerBtn.textContent = "Lade..."; triggerBtn.disabled = true; }
 
-            // 3. Abrufen (mit 5 Sekunden Timeout)
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
             const response = await fetch(url, { signal: controller.signal });
@@ -2959,36 +3043,25 @@
             if (!response.ok) throw new Error("API Fehler");
 
             const data = await response.json();
+            const offsetHours = data.utc_offset_seconds / 3600;
 
-            // 4. Offset berechnen (API liefert Sekunden, wir brauchen Stunden)
-            const offsetSeconds = data.utc_offset_seconds;
-            const offsetHours = offsetSeconds / 3600;
-
-            // 5. Wert setzen
             offsetInput.value = offsetHours;
+            if (typeof syncTimezoneOffset === "function") syncTimezoneOffset(offsetInput);
 
-            // 6. Deine existierende Sync-Funktion aufrufen, um alle Tabs zu aktualisieren
-            // Wir rufen sie direkt auf, als ob das Input-Feld das Event ausgelöst hätte
-            if (typeof syncTimezoneOffset === "function") {
-                syncTimezoneOffset(offsetInput);
+            if (triggerBtn) {
+                triggerBtn.textContent = "✅ " + offsetHours + "h";
+                setTimeout(() => { triggerBtn.textContent = originalText; triggerBtn.disabled = false; }, 2000);
             }
-
-            // Erfolg anzeigen
-            btn.textContent = "✅ " + offsetHours + "h";
-            setTimeout(() => {
-                btn.textContent = originalText;
-                btn.disabled = false;
-            }, 2000);
-
         } catch (error) {
             console.error(error);
-            const msg = error.name === 'AbortError'
-                ? "Zeitüberschreitung: Die API hat nicht rechtzeitig geantwortet (>5s)."
-                : "Fehler beim Abrufen der Zeitzone. Besteht eine Internetverbindung?";
-            alert(msg);
-            const btn = event.target;
-            btn.textContent = "Fehler";
-            btn.disabled = false;
+            if (triggerBtn) {
+                const msg = error.name === 'AbortError'
+                    ? "Zeitüberschreitung (>5s)."
+                    : "Fehler beim Abrufen der Zeitzone.";
+                alert(msg);
+                triggerBtn.textContent = originalText;
+                triggerBtn.disabled = false;
+            }
         }
     }
     // ==========================================================
@@ -3200,11 +3273,176 @@
         if (el) el.addEventListener('change', saveToLocalStorage);
     });
 
-    // Datum beim Laden setzen
+    // ================================================================
+    // ENTER-TASTE löst Berechnung aus
+    // ================================================================
+    const enterCalcMap = {
+        SunMoon:    { ids: ['latitude','longitude','timezoneOffset','date','mgrsInputSunMoon'],    fn: calculateSunMoon },
+        MonthTable: { ids: ['monthLatitude','monthLongitude','monthTimezoneOffset','monthYear','mgrsInputMonthTable'], fn: calculateMonthTable },
+        DayData:    { ids: ['dayLatitude','dayLongitude','dayTimezoneOffset','dayDate','startTime','objectHeightInput','mgrsInputDayData'], fn: calculateDayData },
+        NightCalc:  { ids: ['nightCalcLatitude','nightCalcLongitude','nightCalcTimezoneOffset','nightCalcMonthYear','mgrsInputNightCalc'], fn: calculateMonthlyNightBrightness }
+    };
+    Object.values(enterCalcMap).forEach(({ ids, fn }) => {
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); fn(); } });
+        });
+    });
+
+    // ================================================================
+    // AUTO-OFFSET bei Koordinatenänderung
+    // ================================================================
+    let autoOffsetTimer = null;
+    function scheduleAutoOffset() {
+        clearTimeout(autoOffsetTimer);
+        autoOffsetTimer = setTimeout(() => {
+            const lat = parseFloat(document.getElementById('latitude').value);
+            const lon = parseFloat(document.getElementById('longitude').value);
+            if (!isNaN(lat) && !isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+                fetchTimezone(null); // kein Button-Feedback bei automatischem Aufruf
+            }
+        }, 900);
+    }
+    ['latitude','longitude','monthLatitude','monthLongitude','dayLatitude','dayLongitude',
+     'nightCalcLatitude','nightCalcLongitude'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', scheduleAutoOffset);
+    });
+
+    // ================================================================
+    // AUTOMATISCHE BERECHNUNG nach Laden
+    // ================================================================
+    function autoCalculateActiveTab() {
+        const active = document.querySelector('.tabcontent.active');
+        if (!active) return;
+        switch (active.id) {
+            case 'SunMoon':    calculateSunMoon(); break;
+            case 'MonthTable': calculateMonthTable(); break;
+            case 'DayData':    calculateDayData(); break;
+            case 'NightCalc':  calculateMonthlyNightBrightness(); break;
+        }
+    }
+
+    // ================================================================
+    // ORTE-FAVORITEN
+    // ================================================================
+    const FAV_KEY = 'astro_favorites';
+    const FAV_MAX = 8;
+
+    function loadFavorites() {
+        try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch(e) { return []; }
+    }
+
+    function saveFavorites(favs) {
+        try { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); } catch(e) {}
+    }
+
+    function renderFavorites() {
+        const container = document.getElementById('favChips');
+        if (!container) return;
+        const favs = loadFavorites();
+        container.innerHTML = '';
+        if (favs.length === 0) {
+            container.innerHTML = '<span style="color:var(--text3);font-style:italic;">Noch keine Orte gespeichert.</span>';
+            return;
+        }
+        favs.forEach((fav, idx) => {
+            const chip = document.createElement('span');
+            chip.className = 'fav-chip';
+            chip.title = `${fav.lat}°N, ${fav.lon}°E — UTC${fav.offset >= 0 ? '+' : ''}${fav.offset}h`;
+
+            const label = document.createElement('span');
+            label.textContent = fav.name;
+            label.onclick = () => applyFavorite(fav);
+            chip.appendChild(label);
+
+            const del = document.createElement('button');
+            del.className = 'fav-del';
+            del.textContent = '×';
+            del.title = 'Ort löschen';
+            del.onclick = (e) => { e.stopPropagation(); deleteFavorite(idx); };
+            chip.appendChild(del);
+
+            container.appendChild(chip);
+        });
+    }
+
+    function applyFavorite(fav) {
+        ['latitude','monthLatitude','dayLatitude','nightCalcLatitude'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.value = fav.lat;
+        });
+        ['longitude','monthLongitude','dayLongitude','nightCalcLongitude'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.value = fav.lon;
+        });
+        ['timezoneOffset','monthTimezoneOffset','dayTimezoneOffset','nightCalcTimezoneOffset'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.value = fav.offset;
+        });
+        saveToLocalStorage();
+        autoCalculateActiveTab();
+    }
+
+    function saveFavorite() {
+        const nameInput = document.getElementById('favNameInput');
+        const name = nameInput ? nameInput.value.trim() : '';
+        if (!name) { nameInput?.focus(); return; }
+
+        const lat = parseFloat(document.getElementById('latitude').value);
+        const lon = parseFloat(document.getElementById('longitude').value);
+        const offset = parseFloat(document.getElementById('timezoneOffset').value) || 0;
+
+        if (isNaN(lat) || isNaN(lon)) {
+            alert('Bitte erst gültige Koordinaten eingeben.'); return;
+        }
+
+        const favs = loadFavorites();
+        if (favs.length >= FAV_MAX) {
+            alert(`Maximal ${FAV_MAX} Orte möglich. Bitte erst einen löschen.`); return;
+        }
+        if (favs.some(f => f.name === name)) {
+            alert(`Ein Ort mit dem Namen „${name}" ist bereits gespeichert.`); return;
+        }
+
+        favs.push({ name, lat: parseFloat(lat.toFixed(5)), lon: parseFloat(lon.toFixed(5)), offset });
+        saveFavorites(favs);
+        renderFavorites();
+        if (nameInput) nameInput.value = '';
+    }
+
+    function deleteFavorite(idx) {
+        const favs = loadFavorites();
+        favs.splice(idx, 1);
+        saveFavorites(favs);
+        renderFavorites();
+    }
+
+    // ================================================================
+    // FEHLER-FEEDBACK: auto-clear nach 5 Sekunden
+    // ================================================================
+    const errorTimers = new Map();
+    const errorObserver = new MutationObserver(mutations => {
+        mutations.forEach(m => {
+            const el = m.target;
+            clearTimeout(errorTimers.get(el));
+            if (el.textContent && el.textContent.trim()) {
+                errorTimers.set(el, setTimeout(() => { el.textContent = ''; }, 5000));
+            }
+        });
+    });
+    document.querySelectorAll('.error').forEach(el => {
+        errorObserver.observe(el, { childList: true, characterData: true, subtree: true });
+    });
+
+    // ================================================================
+    // INIT beim Laden
+    // ================================================================
     window.addEventListener('load', function () {
         loadFromLocalStorage();
         setCurrentDate();
-        calculateDayData(); // Initiales Rendern der Tagesdaten
+        renderFavorites();
+        // Auto-Berechnung wenn Koordinaten vorhanden
+        if (localStorage.getItem('astro_latitude') && localStorage.getItem('astro_longitude')) {
+            autoCalculateActiveTab();
+        }
     });
 
 </script>
