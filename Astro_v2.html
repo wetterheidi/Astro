@@ -41,8 +41,8 @@
             --nvg-restricted: rgba(251, 191,  36, 0.15);
             --nvg-dark:       rgba(239,  68,  68, 0.25);
 
-            --sun-tint:   rgba(251, 191,  36, 0.14);
-            --moon-tint:  rgba(147, 167, 210, 0.13);
+            --sun-tint:   rgba(251, 191,  36, 0.22);
+            --moon-tint:  rgba(147, 167, 210, 0.20);
             --sun-stripe: rgba(251, 191,  36, 0.60);
             --moon-stripe:rgba(147, 167, 210, 0.55);
 
@@ -486,8 +486,13 @@
             word-break: break-word; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word;
         }
 
-        .sun-row   { background: var(--sun-tint); }
-        .moon-row  { background: var(--moon-tint); }
+        /* Cell-level backgrounds so they override the global td { background } rule */
+        .sun-row  td { background: var(--sun-tint); }
+        .moon-row td { background: var(--moon-tint); }
+
+        /* Keep hover feedback for sun/moon rows */
+        .sun-row:hover  td { background: var(--bg4); }
+        .moon-row:hover td { background: var(--bg4); }
 
         /* Linker Akzentstreifen für Sonne/Mond-Zeilen */
         .sun-row  td:first-child { box-shadow: inset 3px 0 0 var(--sun-stripe); }
@@ -1579,17 +1584,25 @@
         const solarNoonPosition = SunCalc.getPosition(sunTimes.solarNoon, lat, lon);
         const moonNoon = findMoonNoon(date, lat, lon);
 
+        // Filter: only include events that fall within the selected day's 24-hour window
+        // (UTC or local, depending on the toggle)
+        const inDay = (t) => isInSelectedDay(t, date, useUTC, offset);
+        const td = (t) => inDay(t) ? t : null; // time-or-null
+        const ft = (t) => formatTime(td(t));    // formatted-or-N/A
+
+        const moonNoonTime = (moonNoon.visible && inDay(moonNoon.time)) ? moonNoon.time : null;
+
         sunMoonData = [
-            { event: 'Beginn bürgerliche Dämmerung (Morgen)', time: sunTimes.dawn, display: formatTime(sunTimes.dawn), azimuth: '', elevation: '', class: 'sun-row' },
-            { event: 'Sonnenaufgang', time: sunTimes.sunrise, display: formatTime(sunTimes.sunrise), azimuth: '', elevation: '', class: 'sun-row' },
-            { event: 'Höchststand Sonne', time: sunTimes.solarNoon, display: formatTime(sunTimes.solarNoon), azimuth: (((solarNoonPosition.azimuth * 180 / Math.PI) + 180) % 360).toFixed(1), elevation: (solarNoonPosition.altitude * 180 / Math.PI).toFixed(1), class: 'sun-row' },
-            { event: 'Sonnenuntergang', time: sunTimes.sunset, display: formatTime(sunTimes.sunset), azimuth: '', elevation: '', class: 'sun-row' },
-            { event: 'Ende bürgerliche Dämmerung (Abend)', time: sunTimes.dusk, display: formatTime(sunTimes.dusk), azimuth: '', elevation: '', class: 'sun-row' },
-            { event: 'Mondaufgang', time: moonTimes.rise, display: formatTime(moonTimes.rise), azimuth: '', elevation: '', class: 'moon-row' },
-            { event: 'Höchststand Mond', time: moonNoon.visible ? moonNoon.time : null, display: moonNoon.visible ? formatTime(moonNoon.time) : 'N/A', azimuth: moonNoon.visible && moonNoon.azimuth ? moonNoon.azimuth.toFixed(1) : 'N/A', elevation: moonNoon.visible && moonNoon.elevation ? moonNoon.elevation.toFixed(1) : 'N/A', class: 'moon-row' },
-            { event: 'Monduntergang', time: moonTimes.set, display: formatTime(moonTimes.set), azimuth: '', elevation: '', class: 'moon-row' },
-            { event: 'Ende dunkle Nacht', time: sunTimes.nightEnd, display: formatTime(sunTimes.nightEnd), azimuth: '', elevation: '', class: 'sun-row' },
-            { event: 'Beginn dunkle Nacht', time: sunTimes.night, display: formatTime(sunTimes.night), azimuth: '', elevation: '', class: 'sun-row' },
+            { event: 'Beginn bürgerliche Dämmerung (Morgen)', time: td(sunTimes.dawn),    display: ft(sunTimes.dawn),    azimuth: '', elevation: '', class: 'sun-row' },
+            { event: 'Sonnenaufgang',                         time: td(sunTimes.sunrise),  display: ft(sunTimes.sunrise),  azimuth: '', elevation: '', class: 'sun-row' },
+            { event: 'Höchststand Sonne', time: td(sunTimes.solarNoon), display: ft(sunTimes.solarNoon), azimuth: inDay(sunTimes.solarNoon) ? (((solarNoonPosition.azimuth * 180 / Math.PI) + 180) % 360).toFixed(1) : '', elevation: inDay(sunTimes.solarNoon) ? (solarNoonPosition.altitude * 180 / Math.PI).toFixed(1) : '', class: 'sun-row' },
+            { event: 'Sonnenuntergang',                       time: td(sunTimes.sunset),   display: ft(sunTimes.sunset),   azimuth: '', elevation: '', class: 'sun-row' },
+            { event: 'Ende bürgerliche Dämmerung (Abend)',    time: td(sunTimes.dusk),     display: ft(sunTimes.dusk),     azimuth: '', elevation: '', class: 'sun-row' },
+            { event: 'Mondaufgang',    time: td(moonTimes.rise), display: ft(moonTimes.rise), azimuth: '', elevation: '', class: 'moon-row' },
+            { event: 'Höchststand Mond', time: moonNoonTime, display: moonNoonTime ? formatTime(moonNoonTime) : 'N/A', azimuth: moonNoonTime && moonNoon.azimuth ? moonNoon.azimuth.toFixed(1) : 'N/A', elevation: moonNoonTime && moonNoon.elevation ? moonNoon.elevation.toFixed(1) : 'N/A', class: 'moon-row' },
+            { event: 'Monduntergang',  time: td(moonTimes.set),  display: ft(moonTimes.set),  azimuth: '', elevation: '', class: 'moon-row' },
+            { event: 'Ende dunkle Nacht',   time: td(sunTimes.nightEnd), display: ft(sunTimes.nightEnd), azimuth: '', elevation: '', class: 'sun-row' },
+            { event: 'Beginn dunkle Nacht', time: td(sunTimes.night),    display: ft(sunTimes.night),    azimuth: '', elevation: '', class: 'sun-row' },
         ];
 
         renderTable();
@@ -1644,8 +1657,8 @@
         const tableClone = tableToCopy.cloneNode(true);
         Array.from(tableClone.rows).forEach(row => {
             let bgColor = '#ffffff';
-            if (row.classList.contains('sun-row')) bgColor = '#ffffcc';
-            else if (row.classList.contains('moon-row')) bgColor = '#f0f0f0';
+            if (row.classList.contains('sun-row')) bgColor = '#fff8cc';
+            else if (row.classList.contains('moon-row')) bgColor = '#dde5f5';
 
             Array.from(row.cells).forEach(cell => {
                 if (bgColor !== '#ffffff' || row.parentElement.tagName.toLowerCase() === 'thead') {
@@ -1846,6 +1859,20 @@
     }
 
     // Hilfsfunktion: Prüft, ob ein Zeitpunkt (UTC) in der Offset-Zeitzone am nächsten Tag liegt
+    function isInSelectedDay(time, date, useUTC, offset) {
+        if (!time || isNaN(time.getTime())) return false;
+        if (useUTC) {
+            const dayStart = date.getTime();
+            return time.getTime() >= dayStart && time.getTime() < dayStart + 86400000;
+        }
+        const offsetMs = (offset || 0) * 3600000;
+        const lt = new Date(time.getTime() + offsetMs);
+        const ld = new Date(date.getTime() + offsetMs);
+        return lt.getUTCFullYear() === ld.getUTCFullYear() &&
+               lt.getUTCMonth()    === ld.getUTCMonth()    &&
+               lt.getUTCDate()     === ld.getUTCDate();
+    }
+
     function isNextDay(time, baseDate, offsetHours) {
         if (!time || isNaN(time.getTime())) return false;
         const off = (offsetHours || 0) * 3600000;
@@ -3272,6 +3299,13 @@
                  document.getElementById('dayTimezoneOffset'), document.getElementById('nightCalcTimezoneOffset')]
                  .forEach(el => { if (el) el.value = offset; });
             }
+            const utc = localStorage.getItem('astro_utc');
+            if (utc !== null) {
+                UTC_TOGGLE_IDS.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.checked = utc === '1';
+                });
+            }
         } catch (e) { /* localStorage nicht verfügbar */ }
     }
 
@@ -3279,6 +3313,24 @@
     ['latitude','longitude','timezoneOffset'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('change', saveToLocalStorage);
+    });
+
+    // ================================================================
+    // UTC-TOGGLE SYNCHRONISATION
+    // ================================================================
+    const UTC_TOGGLE_IDS = ['utcToggle', 'monthUtcToggle', 'dayUtcToggle', 'nightCalcUtcToggle'];
+
+    function syncUtcToggles(checked) {
+        UTC_TOGGLE_IDS.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.checked = checked;
+        });
+        try { localStorage.setItem('astro_utc', checked ? '1' : '0'); } catch(e) {}
+    }
+
+    UTC_TOGGLE_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', function() { syncUtcToggles(this.checked); });
     });
 
     // ================================================================
